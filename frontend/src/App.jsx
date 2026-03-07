@@ -5,7 +5,7 @@ import Sidebar from './components/Admin/Sidebar';
 import TopNav from './components/Admin/TopNav'; 
 import Dashboard from './pages/Dashboard';
 import Employees from './pages/Employees';
-//import Settings from './pages/Settings';
+import Settings from './pages/Settings';
 
 
 function App() {
