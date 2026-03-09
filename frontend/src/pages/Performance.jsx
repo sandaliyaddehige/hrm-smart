@@ -90,11 +90,11 @@ export default function Performance() {
               <select
                 value={rating}
                 onChange={e => setRating(e.target.value)}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 bg-white cursor-pointer"
+                className="w-full border border-gray-200 rounded-xl px-5 py-3 text-sm text-gray-700 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-300 bg-white cursor-pointer pr-10"
               >
                 {ratingOptions.map(r => <option key={r}>{r}</option>)}
               </select>
-              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">▾</span>
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">▾</span>
             </div>
 
             <div className="flex gap-3 mt-8">

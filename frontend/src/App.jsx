@@ -13,6 +13,25 @@ const navItems = [
   { id: "settings", label: "Settings", icon: "⚙" },
 ];
 
+function BellIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+      <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+    </svg>
+  );
+}
+
+function LogoutIcon() {
+  return (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </svg>
+  );
+}
+
 export default function App() {
   const [activePage, setActivePage] = useState("dashboard");
 
@@ -31,19 +50,12 @@ export default function App() {
       {/* Sidebar */}
       <aside className="w-56 bg-white border-r border-gray-100 flex flex-col py-6 px-4 shrink-0">
         {/* Logo */}
-        <div className="flex items-center gap-3 mb-10 px-2">
-          <div className="w-9 h-9 rounded-lg bg-blue-600 flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <rect x="2" y="2" width="9" height="9" rx="2" fill="white" opacity="0.9"/>
-              <rect x="13" y="2" width="9" height="9" rx="2" fill="white" opacity="0.6"/>
-              <rect x="2" y="13" width="9" height="9" rx="2" fill="white" opacity="0.6"/>
-              <rect x="13" y="13" width="9" height="9" rx="2" fill="white" opacity="0.3"/>
-            </svg>
-          </div>
-          <div>
-            <p className="font-bold text-gray-800 text-sm leading-tight">ManagerView</p>
-            <p className="text-xs text-gray-400">HRM Portal</p>
-          </div>
+        <div className="flex flex-col items-center mb-8 px-2">
+          <img
+            src="/logo.png"
+            alt="Advera HR Logo"
+            className="w-28 h-auto object-contain"
+          />
         </div>
 
         {/* Nav */}
@@ -65,8 +77,9 @@ export default function App() {
         </nav>
 
         {/* Logout */}
-        <button className="flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-500 hover:bg-red-50 rounded-xl transition-all">
-          <span>⬛</span> Logout
+        <button className="flex items-center justify-center gap-2 px-2 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-xl transition-all shadow-sm hover:shadow-md">
+          <LogoutIcon />
+          Logout
         </button>
       </aside>
 
@@ -82,7 +95,7 @@ export default function App() {
             {activePage === "reports" && "Reports"}
             {activePage === "settings" && "Settings"}
           </h1>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {activePage === "attendance" && (
               <div className="flex items-center gap-2">
                 <span className="text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5">Mar 01, 2026 - Mar 31, 2026</span>
@@ -93,12 +106,16 @@ export default function App() {
             {activePage === "performance" && (
               <span className="text-sm text-gray-500 border border-gray-200 rounded-full px-4 py-1.5">Q1 Review 2026</span>
             )}
-            <button className="relative p-2 text-gray-500 hover:bg-gray-100 rounded-full">
-              🔔
-              <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+
+            {/* Notification Button */}
+            <button className="relative w-9 h-9 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200 group">
+              <BellIcon />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
             </button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center text-xs font-bold text-white">AR</div>
+
+            {/* User */}
+            <div className="flex items-center gap-2 pl-1">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold text-white">AR</div>
               <span className="text-sm font-medium text-gray-700">Alex Rivera ▾</span>
             </div>
           </div>

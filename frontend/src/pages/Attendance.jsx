@@ -83,11 +83,11 @@ export default function Attendance() {
           <select
             value={dept}
             onChange={e => { setDept(e.target.value); setPage(1); }}
-            className="border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-gray-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-100 bg-white cursor-pointer pr-8"
+            className="border border-gray-200 rounded-xl px-5 py-3 text-sm text-gray-600 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-100 bg-white cursor-pointer pr-10 min-w-[180px]"
           >
             {departments.map(d => <option key={d}>Dept: {d}</option>)}
           </select>
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-xs">▾</span>
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none text-sm">▾</span>
         </div>
       </div>
 

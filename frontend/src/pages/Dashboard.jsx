@@ -10,7 +10,7 @@ const barData = [
 ];
 
 const pieData = [
-  { name: "Eng", value: 40 },
+  { name: "Engineering", value: 40 },
   { name: "Sales", value: 30 },
   { name: "HR", value: 15 },
   { name: "Other", value: 15 },
