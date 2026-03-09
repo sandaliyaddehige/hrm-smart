@@ -1,7 +1,11 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FaThLarge, FaUsers, FaMoneyBillWave, FaCalendarCheck, FaUserTie, FaFileAlt, FaCog, FaSignOutAlt } from 'react-icons/fa';
-import './Sidebar.css';
+import { 
+  FaThLarge, FaUsers, FaMoneyBillWave, FaCalendarCheck, 
+  FaUserTie, FaFileAlt, FaCog, FaSignOutAlt 
+} from 'react-icons/fa';
+
+import logo from '../../assets/logo.webp'; 
 
 const Sidebar = () => {
   const location = useLocation();
@@ -17,31 +21,45 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="sidebar">
-      <div className="sidebar-brand">
-        <img src="/logo new.png" alt="Logo" className="brand-logo" style={{width: '40px'}} />
+    <div className="w-[260px] h-screen bg-white border-r border-slate-100 flex flex-col fixed left-0 top-0 z-[1000] shadow-[4px_0_15px_rgba(0,0,0,0.02)] p-[30px_20px]">
+      
+      {/* 1. Brand Section */}
+      <div className="flex items-center gap-[15px] p-[10px] mb-5">
+        <img src={logo} alt="Logo" className="w-10 object-contain" />
         <div className="brand-text">
-          <h3 style={{fontSize: '16px', margin: 0}}>Admin view</h3>
-          <p style={{fontSize: '12px', margin: 0, color: '#888'}}>ADVERA HR</p>
+          <h3 className="font-extrabold text-[#1e293b] text-base m-0 tracking-tight">Admin view</h3>
+          <p className="text-xs font-bold text-slate-400 m-0">ADVERA HR</p>
         </div>
       </div>
 
-      <nav className="sidebar-menu" style={{marginTop: '30px', display: 'flex', flexDirection: 'column', gap: '10px'}}>
-        {menuItems.map((item, index) => (
-          <Link 
-            key={index} 
-            to={item.path} 
-            className={`menu-link ${location.pathname === item.path ? 'active' : ''}`}
-            style={{textDecoration: 'none', color: '#555', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px', borderRadius: '8px'}}
-          >
-            {item.icon} <span>{item.name}</span>
-          </Link>
-        ))}
+      {/* 2. Menu Section */}
+      <nav className="mt-[30px] flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+        {menuItems.map((item, index) => {
+          const isActive = location.pathname === item.path;
+          return (
+            <Link 
+              key={index} 
+              to={item.path} 
+              className={`flex items-center gap-3 px-[15px] py-3 rounded-xl font-semibold text-[15px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group ${
+                isActive 
+                ? 'bg-[#4f46e5] text-white shadow-[0_10px_15px_-3px_rgba(79,70,229,0.3)]' 
+                : 'text-[#64748b] hover:bg-[#f8fafc] hover:text-[#4f46e5] hover:translate-x-2'
+              }`}
+            >
+              <span className={`text-lg transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-[#64748b]'}`}>
+                {item.icon}
+              </span>
+              <span>{item.name}</span>
+            </Link>
+          );
+        })}
       </nav>
 
-      <div className="sidebar-footer" style={{marginTop: 'auto', paddingBottom: '20px'}}>
-        <button className="logout-button" style={{width: '100%', padding: '10px', border: 'none', borderRadius: '8px', background: '#fff0f0', color: '#ff4d4d', cursor: 'pointer'}}>
-          <FaSignOutAlt /> Logout
+      {/* 3. Footer / Logout */}
+      <div className="mt-auto pb-5">
+        <button className="w-full flex items-center justify-center gap-[10px] py-3 rounded-xl font-bold bg-[#fff0f0] text-[#ff4d4d] border border-[#fee2e2] transition-all duration-300 hover:bg-[#ffeded] hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgba(255,77,77,0.15)]">
+          <FaSignOutAlt />
+          <span>Logout</span>
         </button>
       </div>
     </div>
