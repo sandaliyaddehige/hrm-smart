@@ -1,8 +1,8 @@
 import { useState } from "react";
-import Dashboard from "./pages/Dashboard";
-import Employees from "./pages/Employees";
-import Performance from "./pages/Performance";
-import Attendance from "./pages/Attendance";
+import EmployeeDashboard from "./pages/EmployeeDashboard";
+import EmployeeList from "./pages/EmployeeList";
+import EmployeePerformance from "./pages/EmployeePerformance";
+import EmployeeAttendance from "./pages/EmployeeAttendance";
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: "▦" },
@@ -37,10 +37,10 @@ export default function App() {
 
   const renderPage = () => {
     switch (activePage) {
-      case "dashboard": return <Dashboard />;
-      case "employees": return <Employees />;
-      case "performance": return <Performance />;
-      case "attendance": return <Attendance />;
+      case "dashboard": return <EmployeeDashboard />;
+      case "employees": return <EmployeeList />;
+      case "performance": return <EmployeePerformance />;
+      case "attendance": return <EmployeeAttendance />;
       default: return <div className="p-10 text-gray-400">Page coming soon...</div>;
     }
   };
@@ -77,7 +77,7 @@ export default function App() {
         </nav>
 
         {/* Logout */}
-        <button className="flex items-center justify-center gap-2 px-2 py-2 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-xl transition-all shadow-sm hover:shadow-md">
+        <button className="flex items-center justify-center gap-2 px-3 py-2.5 text-sm font-semibold text-white bg-red-500 hover:bg-red-600 active:bg-red-700 rounded-xl transition-all shadow-sm hover:shadow-md">
           <LogoutIcon />
           Logout
         </button>
