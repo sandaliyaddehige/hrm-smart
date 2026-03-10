@@ -21,32 +21,33 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="w-[260px] h-screen bg-white border-r border-slate-100 flex flex-col fixed left-0 top-0 z-[1000] shadow-[4px_0_15px_rgba(0,0,0,0.02)] p-[30px_20px]">
+    
+    <div className="w-full h-full bg-white flex flex-col p-6 overflow-hidden">
       
-      {/* 1. Brand Section */}
-      <div className="flex items-center gap-[15px] p-[10px] mb-5">
-        <img src={logo} alt="Logo" className="w-10 object-contain" />
-        <div className="brand-text">
-          <h3 className="font-extrabold text-[#1e293b] text-base m-0 tracking-tight">Admin view</h3>
-          <p className="text-xs font-bold text-slate-400 m-0">ADVERA HR</p>
+      {/* 2. Brand Section */}
+      <div className="flex items-center gap-4 px-2 mb-8">
+        <img src={logo} alt="Logo" className="w-10 h-10 object-contain" />
+        <div>
+          <h3 className="font-extrabold text-[#1e293b] text-base leading-none tracking-tight">Admin view</h3>
+          <p className="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-wider">ADVERA HR</p>
         </div>
       </div>
 
-      {/* 2. Menu Section */}
-      <nav className="mt-[30px] flex flex-col gap-2 overflow-y-auto custom-scrollbar">
+      {/* 3. Menu Section - Scrollable if items are many */}
+      <nav className="flex-1 flex flex-col gap-2 overflow-y-auto pr-1 custom-scrollbar">
         {menuItems.map((item, index) => {
           const isActive = location.pathname === item.path;
           return (
             <Link 
               key={index} 
               to={item.path} 
-              className={`flex items-center gap-3 px-[15px] py-3 rounded-xl font-semibold text-[15px] transition-all duration-300 ease-[cubic-bezier(0.4,0,0.2,1)] group ${
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl font-semibold text-[15px] transition-all duration-300 group ${
                 isActive 
-                ? 'bg-[#4f46e5] text-white shadow-[0_10px_15px_-3px_rgba(79,70,229,0.3)]' 
-                : 'text-[#64748b] hover:bg-[#f8fafc] hover:text-[#4f46e5] hover:translate-x-2'
+                ? 'bg-[#4f46e5] text-white shadow-lg shadow-indigo-200' 
+                : 'text-[#64748b] hover:bg-[#f8fafc] hover:text-[#4f46e5] hover:pl-6'
               }`}
             >
-              <span className={`text-lg transition-transform duration-300 group-hover:scale-110 ${isActive ? 'text-white' : 'text-[#64748b]'}`}>
+              <span className={`text-lg ${isActive ? 'text-white' : 'text-[#94a3b8] group-hover:text-[#4f46e5]'}`}>
                 {item.icon}
               </span>
               <span>{item.name}</span>
@@ -55,9 +56,9 @@ const Sidebar = () => {
         })}
       </nav>
 
-      {/* 3. Footer / Logout */}
-      <div className="mt-auto pb-5">
-        <button className="w-full flex items-center justify-center gap-[10px] py-3 rounded-xl font-bold bg-[#fff0f0] text-[#ff4d4d] border border-[#fee2e2] transition-all duration-300 hover:bg-[#ffeded] hover:-translate-y-0.5 hover:shadow-[0_4px_10px_rgba(255,77,77,0.15)]">
+      {/* 4. Footer / Logout */}
+      <div className="mt-auto pt-6 border-t border-slate-50">
+        <button className="w-full flex items-center justify-center gap-3 py-3 rounded-xl font-bold bg-[#fff1f2] text-[#e11d48] border border-[#ffe4e6] transition-all hover:bg-[#ffe4e6] active:scale-95">
           <FaSignOutAlt />
           <span>Logout</span>
         </button>
