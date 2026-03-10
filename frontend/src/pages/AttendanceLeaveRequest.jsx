@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-// ── Mock Data — backend ready වූ විට remove කරලා API uncomment කරන්න ──
+// ── Mock Data ─
 const mockAttendanceByDate = {
   1:  [{ employee: "Alex Rivera",    time: "08:55 AM - 05:30 PM", hours: "8.5h", status: "Present" },
        { employee: "Jeremy Neigh",   time: "09:10 AM - 06:00 PM", hours: "8.8h", status: "Present" },
@@ -36,7 +36,7 @@ const mockLeaveRequests = [
   { _id: "l5", name: "Courtney Henry", empNum: "E-012", leaveType: "Unpaid",    enabled: "Active",   status: "Pending" },
   { _id: "l6", name: "Jane Cooper",    empNum: "E-043", leaveType: "Sick",      enabled: "Inactive", status: "Pending" },
 ];
-// ─────────────────────────────────────────────────────────────────────────────
+// ─────
 
 const avatarColors = ["bg-blue-500","bg-purple-500","bg-pink-500","bg-orange-500","bg-teal-500","bg-rose-500"];
 const getInitials  = (name) => name.split(" ").map((n) => n[0]).join("").toUpperCase();
@@ -117,23 +117,14 @@ export default function AttendanceLeaveRequest() {
   useEffect(() => {
     if (!selectedDay) return;
     setLoading(true);
-    // Backend ready වූ විට මේ mock ටික remove කරලා පහල API uncomment කරන්න:
-    // fetch(`/api/attendance?date=2026-01-${String(selectedDay).padStart(2,"0")}`)
-    //   .then(r => r.json())
-    //   .then(data => setAttendanceData(data))
-    //   .finally(() => setLoading(false));
+    
     setTimeout(() => {
       setAttendanceData(mockAttendanceByDate[selectedDay] || []);
       setLoading(false);
     }, 300);
   }, [selectedDay]);
 
-  // Backend ready වූ විට uncomment කරන්න:
-  // useEffect(() => {
-  //   fetch("/api/leave-requests")
-  //     .then(r => r.json())
-  //     .then(data => setLeaveRequests(data));
-  // }, []);
+  
 
   const handleApprove = (id) => {
     // fetch(`/api/leave-requests/${id}/approve`, { method: "PUT" });
