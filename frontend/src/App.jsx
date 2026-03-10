@@ -6,7 +6,9 @@ import TopNav from './components/Admin/TopNav';
 import Dashboard from './pages/Dashboard';
 import Employees from './pages/Employees';
 import Settings from './pages/Settings';
-
+import UserProfile from './pages/UserProfile';
+import EmployeeProfileView from './pages/EmployeeProfileView';
+import AttendanceLeaveRequest from './pages/AttendanceLeaveRequest';
 
 function App() {
   return (
@@ -30,6 +32,11 @@ function App() {
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/employees" element={<Employees />} />
                 <Route path="/settings" element={<Settings />} />
+
+              <Route path="/profile" element={<UserProfile />} />
+              <Route path="/employee-profile" element={<EmployeeProfileView />} />
+              <Route path="/attendance" element={<AttendanceLeaveRequest />} />
+                
               
            {/* If you enter an incorrect URL, you will be redirected back to the Dashboard */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
