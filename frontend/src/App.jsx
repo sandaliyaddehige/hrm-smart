@@ -1,73 +1,62 @@
-import { useState } from "react";
-import { IoBellOutline } from "react-icons/io5";
-import ManagerSidebar from "./components/ManagerSidebar";
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'; 
+
+// Components
+import Sidebar from './components/Admin/Sidebar';
+import TopNav from './components/Admin/TopNav'; 
+
+// Admin Pages 
+import Dashboard from './pages/Dashboard';
+import Employees from './pages/Employees';
+import Settings from './pages/Settings';
+
+// Manager Pages 
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import EmployeeList from "./pages/EmployeeList";
 import EmployeePerformance from "./pages/EmployeePerformance";
 import EmployeeAttendance from "./pages/EmployeeAttendance";
 
-export default function App() {
-  const [activePage, setActivePage] = useState("dashboard");
-
-  const renderPage = () => {
-    switch (activePage) {
-      case "dashboard":   return <EmployeeDashboard />;
-      case "employees":   return <EmployeeList />;
-      case "performance": return <EmployeePerformance />;
-      case "attendance":  return <EmployeeAttendance />;
-      default: return <div className="p-10 text-gray-400">Page coming soon...</div>;
-    }
-  };
-
+function App() {
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <Router>
+      <div className="flex h-screen w-full bg-[#f8fafc] font-sans overflow-hidden">
+        
+        {/* Sidebar */}
+        <aside className="w-64 h-full flex-shrink-0 border-r border-gray-100">
+          <Sidebar />
+        </aside>
 
-      <ManagerSidebar activePage={activePage} setActivePage={setActivePage} />
+        <div className="flex-1 flex flex-col min-w-0 h-full">
+          
+          {/* Top Navigation */}
+          <TopNav title="HRM Smart Portal" /> 
 
-      {/* Main */}
-      <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Topbar */}
-        <header className="bg-white border-b border-gray-100 px-8 py-4 flex items-center justify-between shrink-0">
-          <h1 className="text-2xl font-bold text-gray-800">
-            {activePage === "dashboard"   && "Manager Dashboard"}
-            {activePage === "employees"   && "Employee List"}
-            {activePage === "performance" && "Employee Performance Review"}
-            {activePage === "attendance"  && "Team Attendance Report"}
-            {activePage === "settings"    && "Settings"}
-          </h1>
-          <div className="flex items-center gap-3">
-            {activePage === "attendance" && (
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5">
-                  Mar 01, 2026 - Mar 31, 2026
-                </span>
-                <button className="border border-gray-300 text-gray-700 text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-gray-50">PDF</button>
-                <button className="bg-blue-600 text-white text-sm font-semibold px-4 py-1.5 rounded-lg hover:bg-blue-700">Excel</button>
-              </div>
-            )}
-            {activePage === "performance" && (
-              <span className="text-sm text-gray-500 border border-gray-200 rounded-full px-4 py-1.5">Q1 Review 2026</span>
-            )}
+          <main className="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
+            <div className="max-w-[1400px] mx-auto">
+              <Routes>
+                {/* Default Redirection */}
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                
+                {/* Admin Routes */}
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/employees" element={<Employees />} />
+                <Route path="/settings" element={<Settings />} />
 
-            {/* Notification Button */}
-            <button className="relative w-9 h-9 flex items-center justify-center text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all duration-200">
-              <IoBellOutline size={20} />
-              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full ring-2 ring-white"></span>
-            </button>
+                {/* Manager Routes */}
+                <Route path="/manager/dashboard" element={<EmployeeDashboard />} />
+                <Route path="/manager/employees" element={<EmployeeList />} />
+                <Route path="/manager/performance" element={<EmployeePerformance />} />
+                <Route path="/manager/attendance" element={<EmployeeAttendance />} />
 
-            {/* User */}
-            <div className="flex items-center gap-2 pl-1">
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-xs font-bold text-white">AR</div>
-              <span className="text-sm font-medium text-gray-700">Alex Rivera ▾</span>
+                {/* 404 - Redirect to dashboard */}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
             </div>
-          </div>
-        </header>
-
-        {/* Content */}
-        <main className="flex-1 overflow-y-auto p-8">
-          {renderPage()}
-        </main>
+          </main>
+        </div>
       </div>
-    </div>
+    </Router>
   );
 }
+
+export default App;
