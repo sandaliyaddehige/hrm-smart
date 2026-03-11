@@ -25,7 +25,7 @@ import EmployeeAttendance from "./pages/EmployeeAttendance";
 const LayoutWrapper = () => {
   const location = useLocation();
   const isManagerPath = location.pathname.startsWith('/manager');
-  const [activePage, setActivePage] = useState('dashboard');
+  const [activePage, setActivePage] = useState('dashboard'); 
 
 
   return (
@@ -62,8 +62,8 @@ const LayoutWrapper = () => {
 
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/employee-profile" element={<EmployeeProfileView />} />
-              {/* <Route path="/attendance" element={<AttendanceLeaveRequest />} /> */}
-                <Route path="/manager/attendance" element={<AttendanceLeaveRequest />} />
+               <Route path="/attendance" element={<AttendanceLeaveRequest />} /> 
+                {/*<Route path="/manager/attendance" element={<AttendanceLeaveRequest />} />*/}
               
            {/* If you enter an incorrect URL, you will be redirected back to the Dashboard */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
