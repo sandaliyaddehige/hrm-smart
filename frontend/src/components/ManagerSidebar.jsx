@@ -1,16 +1,18 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; 
 import { MdDashboard } from "react-icons/md";
 import { FaUsers } from "react-icons/fa";
 import { BsCalendarCheck } from "react-icons/bs";
 import { AiOutlineBarChart } from "react-icons/ai";
 import { IoSettings, IoLogOutOutline } from "react-icons/io5";
 
+
 const navItems = [
-  { id: "dashboard",   label: "Dashboard",   icon: MdDashboard },
-  { id: "employees",   label: "Employees",   icon: FaUsers },
-  { id: "attendance",  label: "Attendance",  icon: BsCalendarCheck },
-  { id: "performance", label: "Performance", icon: AiOutlineBarChart },
-  { id: "settings",    label: "Settings",    icon: IoSettings },
+  { id: "dashboard",   label: "Dashboard",   icon: MdDashboard,       path: "/manager/dashboard" },
+  { id: "employees",   label: "Employees",   icon: FaUsers,           path: "/manager/employees" },
+  { id: "attendance",  label: "Attendance",  icon: BsCalendarCheck,   path: "/manager/attendance" },
+  { id: "performance", label: "Performance", icon: AiOutlineBarChart, path: "/manager/performance" },
+  { id: "settings",    label: "Settings",    icon: IoSettings,        path: "/manager/settings" },
 ];
 
 const ManagerSidebar = ({ activePage, setActivePage }) => {
@@ -37,8 +39,10 @@ const ManagerSidebar = ({ activePage, setActivePage }) => {
           const isActive = activePage === item.id;
           
           return (
-            <button
+            
+            <Link
               key={item.id}
+              to={item.path}
               onClick={() => setActivePage(item.id)}
               className={`group flex items-center gap-3 px-4 py-3 rounded-xl text-[14px] font-bold transition-all duration-300 ${
                 isActive
@@ -53,17 +57,20 @@ const ManagerSidebar = ({ activePage, setActivePage }) => {
                 }`} 
               />
               <span className="tracking-tight">{item.label}</span>
-            </button>
+            </Link>
           );
         })}
       </nav>
 
       {/* 3. Logout Section */}
       <div className="mt-auto pt-6 border-t border-slate-50">
-        <button className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 active:scale-95 rounded-xl transition-all border border-rose-100 group">
+        <Link 
+          to="/login" 
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 active:scale-95 rounded-xl transition-all border border-rose-100 group"
+        >
           <IoLogOutOutline size={20} className="group-hover:-translate-x-1 transition-transform" />
           <span>Logout</span>
-        </button>
+        </Link>
       </div>
     </aside>
   );

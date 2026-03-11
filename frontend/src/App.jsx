@@ -13,7 +13,9 @@ import Settings from './pages/Settings';
 
 import UserProfile from './pages/UserProfile';
 import EmployeeProfileView from './pages/EmployeeProfileView';
+//import AttendanceLeaveRequest from './pages/AttendanceLeaveRequest';
 import AttendanceLeaveRequest from './pages/AttendanceLeaveRequest';
+
 
 import EmployeeDashboard from "./pages/EmployeeDashboard";
 import EmployeeList from "./pages/EmployeeList";
@@ -60,8 +62,8 @@ const LayoutWrapper = () => {
 
               <Route path="/profile" element={<UserProfile />} />
               <Route path="/employee-profile" element={<EmployeeProfileView />} />
-              <Route path="/attendance" element={<AttendanceLeaveRequest />} />
-                
+              {/* <Route path="/attendance" element={<AttendanceLeaveRequest />} /> */}
+                <Route path="/manager/attendance" element={<AttendanceLeaveRequest />} />
               
            {/* If you enter an incorrect URL, you will be redirected back to the Dashboard */}
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
