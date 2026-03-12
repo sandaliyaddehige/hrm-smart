@@ -7,6 +7,8 @@ import TopNav from './components/Admin/TopNav';
 import ManagerSidebar from './components/ManagerSidebar'; 
 
 // Pages
+import Signup from './pages/Signup';
+import Login from './pages/Login'; 
 import Dashboard from './pages/Dashboard';
 import Employees from './pages/Employees';
 import Settings from './pages/Settings';
@@ -52,6 +54,9 @@ const LayoutWrapper = () => {
         <main className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-[#f8fafc]">
           <div className="w-full h-full"> 
             <Routes>
+              <Route path="/signup" element={<Signup />} />
+              <Route path="/login" element={<Login />} />
+
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               
               {/* Admin Routes */}
