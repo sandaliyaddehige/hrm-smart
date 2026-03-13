@@ -1,97 +1,75 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'; 
-
-// Components
-import Sidebar from './components/Admin/Sidebar'; 
-import TopNav from './components/Admin/TopNav'; 
-import ManagerSidebar from './components/ManagerSidebar'; 
-
-// Pages
-import Dashboard from './pages/Dashboard';
-import Employees from './pages/Employees';
-import Settings from './pages/Settings';
-
-import UserProfile from './pages/UserProfile';
-import EmployeeProfileView from './pages/EmployeeProfileView';
-//import AttendanceLeaveRequest from './pages/AttendanceLeaveRequest';
-import AttendanceLeaveRequest from './pages/AttendanceLeaveRequest';
-
-
-import EmployeeDashboard from "./pages/EmployeeDashboard";
-import EmployeeList from "./pages/EmployeeList";
-import EmployeePerformance from "./pages/EmployeePerformance";
-import EmployeeAttendance from "./pages/EmployeeAttendance";
-
-const LayoutWrapper = () => {
-  const location = useLocation();
-  const isManagerPath = location.pathname.startsWith('/manager');
-  const [activePage, setActivePage] = useState('dashboard');
-
-
-  return (
-   
-    <div className="flex flex-row h-screen w-full bg-[#f8fafc] overflow-hidden">
-      
-    
-      <aside className="w-64 h-full flex-shrink-0 bg-white border-r border-slate-200 z-30">
-        {isManagerPath ? (
-          <ManagerSidebar activePage={activePage} setActivePage={setActivePage} />
-        ) : (
-          <Sidebar activePage={activePage} setActivePage={setActivePage} />
-        )}
-      </aside>
-
-     
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        
-        <header className="w-full flex-shrink-0 bg-white border-b border-slate-200">
-          <TopNav title={isManagerPath ? "Manager Portal" : "HRM Admin Portal"} /> 
-        </header>
-
-        
-        <main className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-[#f8fafc]">
-          <div className="w-full h-full"> 
-            <Routes>
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              
-              {/* Admin Routes */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/employees" element={<Employees />} />
-
-                <Route path="/settings" element={<Settings />} />
-
-              <Route path="/profile" element={<UserProfile />} />
-              <Route path="/employee-profile" element={<EmployeeProfileView />} />
-              {/* <Route path="/attendance" element={<AttendanceLeaveRequest />} /> */}
-                <Route path="/manager/attendance" element={<AttendanceLeaveRequest />} />
-              
-           {/* If you enter an incorrect URL, you will be redirected back to the Dashboard */}
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-
-              <Route path="/settings" element={<Settings />} />
-
-              {/* Manager Routes */}
-              <Route path="/manager/dashboard" element={<EmployeeDashboard />} />
-              <Route path="/manager/employees" element={<EmployeeList />} />
-              <Route path="/manager/performance" element={<EmployeePerformance />} />
-              <Route path="/manager/attendance" element={<EmployeeAttendance />} />
-
-
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </div>
-        </main>
-      </div>
-    </div>
-  );
-};
+import { useState } from 'react'
+// Importing files from the 'pages' folder based on your terminal output
+import Dashboard from './pages/EmployeeDashboard'
+import Attendance from './pages/EmployeeAttendance'
+import Leave from './pages/AttendanceLeaveRequest'
 
 function App() {
+  const [view, setView] = useState('dashboard') 
+
   return (
-    <Router>
-      <LayoutWrapper />
-    </Router>
-  );
+    <div className="App">
+      {/* Navigation Bar matching Figma blue theme */}
+      <nav style={{ 
+        padding: '15px', 
+        background: '#4F46E5', 
+        display: 'flex', 
+        gap: '20px', 
+        justifyContent: 'center',
+        boxShadow: '0 2px 10px rgba(0,0,0,0.1)' 
+      }}>
+        <button 
+          onClick={() => setView('dashboard')} 
+          style={{ 
+            padding: '10px 20px', 
+            cursor: 'pointer', 
+            borderRadius: '8px', 
+            border: 'none', 
+            backgroundColor: view === 'dashboard' ? 'white' : 'transparent',
+            color: view === 'dashboard' ? '#4F46E5' : 'white',
+            fontWeight: 'bold'
+          }}
+        >
+          Dashboard
+        </button>
+        <button 
+          onClick={() => setView('attendance')} 
+          style={{ 
+            padding: '10px 20px', 
+            cursor: 'pointer', 
+            borderRadius: '8px', 
+            border: 'none', 
+            backgroundColor: view === 'attendance' ? 'white' : 'transparent',
+            color: view === 'attendance' ? '#4F46E5' : 'white',
+            fontWeight: 'bold'
+          }}
+        >
+          Attendance
+        </button>
+        <button 
+          onClick={() => setView('leave')} 
+          style={{ 
+            padding: '10px 20px', 
+            cursor: 'pointer', 
+            borderRadius: '8px', 
+            border: 'none', 
+            backgroundColor: view === 'leave' ? 'white' : 'transparent',
+            color: view === 'leave' ? '#4F46E5' : 'white',
+            fontWeight: 'bold'
+          }}
+        >
+          Leave Request
+        </button>
+      </nav>
+
+      {/* Rendering components based on selected view */}
+      <main style={{ padding: '20px' }}>
+        {view === 'dashboard' && <Dashboard />}
+        {view === 'attendance' && <Attendance />}
+        {view === 'leave' && <Leave />}
+      </main>
+    </div>
+  )
 }
 
-export default App;
+export default App
