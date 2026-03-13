@@ -1,69 +1,51 @@
 import { useState } from 'react'
-// Importing files from the 'pages' folder based on your terminal output
+
 import Dashboard from './pages/EmployeeDashboard'
 import Attendance from './pages/EmployeeAttendance'
 import Leave from './pages/AttendanceLeaveRequest'
 
 function App() {
-  const [view, setView] = useState('dashboard') 
+  const [view, setView] = useState('dashboard')
 
   return (
-    <div className="App">
-      {/* Navigation Bar matching Figma blue theme */}
-      <nav style={{ 
-        padding: '15px', 
-        background: '#4F46E5', 
-        display: 'flex', 
-        gap: '20px', 
-        justifyContent: 'center',
-        boxShadow: '0 2px 10px rgba(0,0,0,0.1)' 
-      }}>
-        <button 
-          onClick={() => setView('dashboard')} 
-          style={{ 
-            padding: '10px 20px', 
-            cursor: 'pointer', 
-            borderRadius: '8px', 
-            border: 'none', 
-            backgroundColor: view === 'dashboard' ? 'white' : 'transparent',
-            color: view === 'dashboard' ? '#4F46E5' : 'white',
-            fontWeight: 'bold'
-          }}
-        >
-          Dashboard
-        </button>
-        <button 
-          onClick={() => setView('attendance')} 
-          style={{ 
-            padding: '10px 20px', 
-            cursor: 'pointer', 
-            borderRadius: '8px', 
-            border: 'none', 
-            backgroundColor: view === 'attendance' ? 'white' : 'transparent',
-            color: view === 'attendance' ? '#4F46E5' : 'white',
-            fontWeight: 'bold'
-          }}
-        >
-          Attendance
-        </button>
-        <button 
-          onClick={() => setView('leave')} 
-          style={{ 
-            padding: '10px 20px', 
-            cursor: 'pointer', 
-            borderRadius: '8px', 
-            border: 'none', 
-            backgroundColor: view === 'leave' ? 'white' : 'transparent',
-            color: view === 'leave' ? '#4F46E5' : 'white',
-            fontWeight: 'bold'
-          }}
-        >
-          Leave Request
-        </button>
-      </nav>
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
+      {/* Sidebar Section */}
+      <aside className="w-64 bg-indigo-700 text-white flex flex-col">
+        <div className="p-6 text-2xl font-bold border-b border-indigo-600">
+          Smart HRM
+        </div>
+        <nav className="flex-1 p-4 space-y-2">
+          <button 
+            onClick={() => setView('dashboard')}
+            className={`w-full text-left p-3 rounded-lg transition ${view === 'dashboard' ? 'bg-white text-indigo-700 shadow' : 'hover:bg-indigo-600'}`}
+          >
+            📊 Dashboard
+          </button>
+          <button 
+            onClick={() => setView('attendance')}
+            className={`w-full text-left p-3 rounded-lg transition ${view === 'attendance' ? 'bg-white text-indigo-700 shadow' : 'hover:bg-indigo-600'}`}
+          >
+            📅 Attendance
+          </button>
+          <button 
+            onClick={() => setView('leave')}
+            className={`w-full text-left p-3 rounded-lg transition ${view === 'leave' ? 'bg-white text-indigo-700 shadow' : 'hover:bg-indigo-600'}`}
+          >
+            📝 Leave Request
+          </button>
+        </nav>
+        <div className="p-4 border-t border-indigo-600 text-sm text-indigo-200">
+          Logged in as Nasli
+        </div>
+      </aside>
 
-      {/* Rendering components based on selected view */}
-      <main style={{ padding: '20px' }}>
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto p-8">
+        <header className="mb-8 flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
+          <h2 className="text-xl font-semibold capitalize">{view} View</h2>
+          <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center text-indigo-700 font-bold">N</div>
+        </header>
+
         {view === 'dashboard' && <Dashboard />}
         {view === 'attendance' && <Attendance />}
         {view === 'leave' && <Leave />}
