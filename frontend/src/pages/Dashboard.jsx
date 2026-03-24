@@ -5,6 +5,16 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   AreaChart, Area, PieChart, Pie, Cell, Legend, Label 
 } from 'recharts';
+import axios from 'axios';
+const [stats, setStats] = useState({});
+
+useEffect(() => {
+    const fetchStats = async () => {
+        const res = await axios.get('http://localhost:5000/api/dashboard-stats');
+        setStats(res.data);
+    };
+    fetchStats();
+}, []);
 
 // Data Arrays 
 const payrollData = [

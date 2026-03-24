@@ -65,4 +65,8 @@ const Dashboard = () => {
   );
 };
 
+<<<<<<< Updated upstream
 export default Dashboard;
+=======
+export default Dashboard;
+>>>>>>> Stashed changes
