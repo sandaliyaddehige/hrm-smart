@@ -3,6 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const path = require('path'); 
+const managerDashboardRoute = require('./routes/managerDashboard');
 
 
 dotenv.config();
@@ -12,7 +13,6 @@ const app = express();
 // --- 1. Middleware ---
 app.use(cors()); 
 app.use(express.json()); 
-
 
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -27,6 +27,7 @@ app.use('/api/recruitment', require('./routes/recruitment'));
 app.use('/api/dashboard', require('./routes/dashboard'));
 app.use('/api/reports', require('./routes/report'));
 app.use('/api/performance', require('./routes/performance')); 
+app.use('/api/manager-dashboard', require('./routes/managerDashboard'));
 
 
 // Basic testing route

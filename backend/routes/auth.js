@@ -13,9 +13,9 @@ const storage = multer.diskStorage({
     cb(null, 'uploads/profiles/'); 
   },
   filename: (req, file, cb) => {
-    
-    const userId = req.user ? req.user.id : 'temp';
-    cb(null, `${userId}-${Date.now()}${path.extname(file.originalname)}`);
+  
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    cb(null, `profile-${uniqueSuffix}${path.extname(file.originalname)}`);
   }
 });
 
@@ -35,7 +35,7 @@ const upload = multer({
   }
 });
 
-// --- 1. REGISTER ---
+// --- 1. REGISTER (Updated) ---
 router.post('/register', async (req, res) => {
   try {
     const { username, email, password, role } = req.body;
@@ -50,43 +50,40 @@ router.post('/register', async (req, res) => {
       username,
       email,
       password: hashedPassword,
-      role: role || 'employee' // default role
+      role: role || 'employee'
     });
 
     await newUser.save();
-    res.status(201).json({ message: "Registration Successful!" });
+    res.status(201).json({ success: true, message: "Registration Successful!" }); 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-
+// --- 2. LOGIN (Updated for Dynamic TopNav) ---
 router.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ error: "User not found" });
 
-    
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: "Invalid credentials" });
 
-    
     const token = jwt.sign(
       { id: user._id, role: user.role }, 
       process.env.JWT_SECRET, 
       { expiresIn: '24h' } 
     );
 
-    
     res.json({
       token,
       user: { 
         id: user._id, 
         username: user.username, 
-        role: user.role.toLowerCase() 
+        role: user.role.toLowerCase(),
+        profileImage: user.profileImage || "" 
       }
     });
   } catch (err) {
@@ -94,10 +91,10 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// --- 3. GET PROFILE ---
-router.get('/profile', auth, async (req, res) => {
+
+router.get('/profile/:id', async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    const user = await User.findById(req.params.id).select('-password');
     if (!user) return res.status(404).json({ error: "User not found" });
     res.json(user);
   } catch (err) {
@@ -105,6 +102,15 @@ router.get('/profile', auth, async (req, res) => {
   }
 });
 
-
+// --- 4. UPDATE PROFILE IMAGE ---
+router.post('/upload-avatar/:id', upload.single('profilePic'), async (req, res) => {
+    try {
+        const imageUrl = `/uploads/profiles/${req.file.filename}`;
+        await User.findByIdAndUpdate(req.params.id, { profileImage: imageUrl });
+        res.json({ success: true, imageUrl });
+    } catch (err) {
+        res.status(500).json({ error: "Upload failed" });
+    }
+});
 
 module.exports = router;

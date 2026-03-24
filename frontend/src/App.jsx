@@ -1,101 +1,152 @@
-import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'; 
+import React from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 
-// Components
-import Sidebar from './components/Admin/Sidebar'; 
-import TopNav from './components/Admin/TopNav'; 
-import ManagerSidebar from './components/ManagerSidebar'; 
+// Components Imports
+import Sidebar from './components/Admin/sidebar';
+import TopNav from './components/Admin/TopNav';
+import HrSidebar from './components/Hr/Sidebar';
+import HrTopNav from './components/Hr/TopNav';
+import ManagerSidebar from './components/Manager/Sidebar';
+import ManagerTopNav from './components/Manager/TopNav'; 
+import EmployeeSidebar from './components/Employee/sidebar'; 
+import EmployeeTopNav from './components/Employee/TopNav';
 
-// Pages
-import Signup from './pages/Signup';
-import Login from './pages/Login'; 
-import Dashboard from './pages/Dashboard';
+// Pages Imports
+import Login from './pages/login';
+import Signup from './pages/signup';
+import Admindashboard from './pages/Admindashboard';
+import HRDashboard from './pages/HRDashboard';
+import Managerdashboard from './pages/Managerdashboard'; 
+import EmployeeDashboard from './pages/EmployeeDashboard';
 import Employees from './pages/Employees';
+import Attendance from './pages/Attendance';
+import Payroll from './pages/Payroll';
+import Recruitment from './pages/Recruitment';
+import Reports from './pages/Reports';
 import Settings from './pages/Settings';
+import EmployeePerformance from './pages/EmployeePerformance';
 
-import UserProfile from './pages/UserProfile';
-import EmployeeProfileView from './pages/EmployeeProfileView';
-//import AttendanceLeaveRequest from './pages/AttendanceLeaveRequest';
-import AttendanceLeaveRequest from './pages/AttendanceLeaveRequest';
+function App() {
+  const role = localStorage.getItem("role")?.toLowerCase();
+  const token = localStorage.getItem("token");
+  const isAuthenticated = !!token;
 
+  // --- Layout Components ---
 
-import EmployeeDashboard from "./pages/EmployeeDashboard";
-import EmployeeList from "./pages/EmployeeList";
-import EmployeePerformance from "./pages/EmployeePerformance";
-import EmployeeAttendance from "./pages/EmployeeAttendance";
-
-const LayoutWrapper = () => {
-  const location = useLocation();
-  const isManagerPath = location.pathname.startsWith('/manager');
-  const [activePage, setActivePage] = useState('dashboard'); 
-
-
-  return (
-   
-    <div className="flex flex-row h-screen w-full bg-[#f8fafc] overflow-hidden">
-      
-    
-      <aside className="w-64 h-full flex-shrink-0 bg-white border-r border-slate-200 z-30">
-        {isManagerPath ? (
-          <ManagerSidebar activePage={activePage} setActivePage={setActivePage} />
-        ) : (
-          <Sidebar activePage={activePage} setActivePage={setActivePage} />
-        )}
-      </aside>
-
-     
-      <div className="flex-1 flex flex-col min-w-0 h-full overflow-hidden">
-        
-        <header className="w-full flex-shrink-0 bg-white border-b border-slate-200">
-          <TopNav title={isManagerPath ? "Manager Portal" : "HRM Admin Portal"} /> 
-        </header>
-
-        
-        <main className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-[#f8fafc]">
-          <div className="w-full h-full"> 
-            <Routes>
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/login" element={<Login />} />
-
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              
-              {/* Admin Routes */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/employees" element={<Employees />} />
-
-                <Route path="/settings" element={<Settings />} />
-
-              <Route path="/profile" element={<UserProfile />} />
-              <Route path="/employee-profile" element={<EmployeeProfileView />} />
-               <Route path="/attendance" element={<AttendanceLeaveRequest />} /> 
-                {/*<Route path="/manager/attendance" element={<AttendanceLeaveRequest />} />*/}
-              
-           {/* If you enter an incorrect URL, you will be redirected back to the Dashboard */}
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-
-              <Route path="/settings" element={<Settings />} />
-
-              {/* Manager Routes */}
-              <Route path="/manager/dashboard" element={<EmployeeDashboard />} />
-              <Route path="/manager/employees" element={<EmployeeList />} />
-              <Route path="/manager/performance" element={<EmployeePerformance />} />
-              <Route path="/manager/attendance" element={<EmployeeAttendance />} />
-
-
-              <Route path="*" element={<Navigate to="/dashboard" replace />} />
-            </Routes>
-          </div>
-        </main>
+  const AdminLayout = ({ children }) => (
+    <div className="flex min-h-screen bg-slate-50 font-sans text-slate-900">
+      <aside className="w-64 fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200"><Sidebar /></aside>
+      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+        <header className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-100"><TopNav /></header>
+        <main className="p-8"><div className="max-w-[1400px] mx-auto">{children}</div></main>
       </div>
     </div>
   );
-};
 
-function App() {
+  const HrLayout = ({ children }) => (
+    <div className="flex min-h-screen bg-slate-50 font-sans">
+      <aside className="w-64 fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200"><HrSidebar /></aside>
+      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+        <header className="sticky top-0 z-40 bg-white border-b border-slate-100"><HrTopNav /></header>
+        <main className="p-8"><div className="max-w-[1400px] mx-auto">{children}</div></main>
+      </div>
+    </div>
+  );
+
+  // 3. Manager Layout 
+const ManagerLayout = ({ children }) => (
+  <div className="flex min-h-screen bg-slate-50 font-sans">
+    <aside className="w-64 fixed inset-y-0 left-0 z-50">
+      <ManagerSidebar />
+    </aside>
+    <div className="flex-1 ml-64 flex flex-col min-h-screen">
+      <header className="sticky top-0 z-40 bg-white border-b border-slate-100">
+      
+        <ManagerTopNav /> 
+      </header>
+      <main className="p-8">
+        <div className="max-w-[1400px] mx-auto">{children}</div>
+      </main>
+    </div>
+  </div>
+);
+  const EmployeeLayout = ({ children }) => (
+    <div className="flex min-h-screen bg-slate-50 font-sans">
+      <aside className="w-64 fixed inset-y-0 left-0 z-50 bg-white border-r border-slate-200"><EmployeeSidebar /></aside>
+      <div className="flex-1 ml-64 flex flex-col min-h-screen">
+        <header className="sticky top-0 z-40 bg-white border-b border-slate-100"><EmployeeTopNav /></header>
+        <main className="p-8"><div className="max-w-[1400px] mx-auto">{children}</div></main>
+      </div>
+    </div>
+  );
+
   return (
-    <Router>
-      <LayoutWrapper />
-    </Router>
+    <BrowserRouter>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
+
+        {/* Dashboards */}
+        <Route path="/Admindashboard" element={isAuthenticated && role === 'admin' ? <AdminLayout><Admindashboard /></AdminLayout> : <Navigate to="/login" />} />
+        <Route path="/HRDashboard" element={isAuthenticated && role === 'hr' ? <HrLayout><HRDashboard /></HrLayout> : <Navigate to="/login" />} />
+        <Route path="/ManagerDashboard" element={isAuthenticated && role === 'manager' ? <ManagerLayout><Managerdashboard /></ManagerLayout> : <Navigate to="/login" />} />
+        <Route path="/EmployeeDashboard" element={isAuthenticated && role === 'employee' ? <EmployeeLayout><EmployeeDashboard /></EmployeeLayout> : <Navigate to="/login" />} />
+
+        {/* Shared Pages  */}
+        
+        <Route path="/employees" element={
+          isAuthenticated && (role === 'admin' || role === 'hr' || role === 'manager') ? 
+          (role === 'admin' ? <AdminLayout><Employees /></AdminLayout> : role === 'manager' ? <ManagerLayout><Employees /></ManagerLayout> : <HrLayout><Employees /></HrLayout>) 
+          : <Navigate to="/login" />} 
+        />
+
+        <Route path="/recruitment" element={
+          isAuthenticated && (role === 'admin' || role === 'hr' || role === 'manager') ? 
+          (role === 'admin' ? <AdminLayout><Recruitment /></AdminLayout> : role === 'manager' ? <ManagerLayout><Recruitment /></ManagerLayout> : <HrLayout><Recruitment /></HrLayout>) 
+          : <Navigate to="/login" />} 
+        />
+
+        <Route path="/payroll" element={
+          isAuthenticated && (role === 'admin' || role === 'hr' || role === 'manager') ? 
+          (role === 'admin' ? <AdminLayout><Payroll /></AdminLayout> : role === 'manager' ? <ManagerLayout><Payroll /></ManagerLayout> : <HrLayout><Payroll /></HrLayout>) 
+          : <Navigate to="/login" />} 
+        />
+
+       
+          <Route  path="/attendance" element={
+          isAuthenticated && (role === 'admin' || role === 'hr' || role === 'manager' || role === 'employee') ? (
+            role === 'admin' ? <AdminLayout><Attendance /></AdminLayout> : 
+            role === 'hr' ? <HrLayout><Attendance /></HrLayout> : 
+            role === 'manager' ? <ManagerLayout><Attendance /></ManagerLayout> : 
+          <EmployeeLayout><Attendance /></EmployeeLayout>
+    ) : (
+      <Navigate to="/login" />
+    )
+  } 
+/>
+        <Route path="/reports" element={
+          isAuthenticated && (role === 'admin' || role === 'hr') ? 
+          (role === 'admin' ? <AdminLayout><Reports /></AdminLayout> : <HrLayout><Reports /></HrLayout>) 
+          : <Navigate to="/login" />} 
+        />
+
+        <Route path="/employeeperformance" element={
+          isAuthenticated && (role === 'manager' || role === 'employee') ? 
+          (role === 'manager' ? <ManagerLayout><EmployeePerformance /></ManagerLayout> : <EmployeeLayout><EmployeePerformance /></EmployeeLayout>) 
+          : <Navigate to="/login" />} 
+        />
+
+        <Route path="/settings" element={
+          isAuthenticated ? 
+          (role === 'admin' ? <AdminLayout><Settings /></AdminLayout> : role === 'hr' ? <HrLayout><Settings /></HrLayout> : role === 'manager' ? <ManagerLayout><Settings /></ManagerLayout> : <EmployeeLayout><Settings /></EmployeeLayout>) 
+          : <Navigate to="/login" />} 
+        />
+
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
