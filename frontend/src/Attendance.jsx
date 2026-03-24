@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios'; 
 
-const EmployeeAttendance = () => {
+const Attendance = () => { // 
   const [time, setTime] = useState(new Date().toLocaleTimeString());
   const [status, setStatus] = useState("Checked Out");
 
@@ -9,9 +10,26 @@ const EmployeeAttendance = () => {
     return () => clearInterval(timer);
   }, []);
 
+  const handleAttendance = async (action) => {
+    setStatus(action); 
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/attendance', {
+        employeeId: "EMP101", 
+        name: "Nasli",        
+        status: action        
+      });
+      
+      console.log("Success:", response.data.message);
+      alert(`${action} successfully recorded!`);
+    } catch (error) {
+      console.error("Database error:", error);
+      alert("Failed to connect to database!");
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Clock Card */}
       <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 text-center">
         <h3 className="text-gray-500 font-medium mb-2 uppercase tracking-wider text-sm">Current Time</h3>
         <div className="text-5xl font-mono font-bold text-indigo-700 mb-4">{time}</div>
@@ -20,23 +38,21 @@ const EmployeeAttendance = () => {
         </div>
       </div>
 
-      {/* Action Buttons */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <button 
-          onClick={() => setStatus("Checked In")}
+          onClick={() => handleAttendance("Checked In")} 
           className="p-6 bg-green-500 hover:bg-green-600 text-white rounded-2xl shadow-lg transition-all transform hover:scale-105 font-bold text-xl"
         >
           🕒 Check In
         </button>
         <button 
-          onClick={() => setStatus("Checked Out")}
+          onClick={() => handleAttendance("Checked Out")} 
           className="p-6 bg-red-500 hover:bg-red-600 text-white rounded-2xl shadow-lg transition-all transform hover:scale-105 font-bold text-xl"
         >
           👋 Check Out
         </button>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
           <p className="text-gray-400 text-sm">Average Work Hours</p>
@@ -55,4 +71,4 @@ const EmployeeAttendance = () => {
   );
 };
 
-export default EmployeeAttendance;
+export default Attendance; // 

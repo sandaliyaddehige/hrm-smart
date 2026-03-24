@@ -1,15 +1,15 @@
 import { useState } from 'react'
 
 import Dashboard from './pages/EmployeeDashboard'
-import Attendance from './pages/EmployeeAttendance'
-import Leave from './pages/AttendanceLeaveRequest'
+import Attendance from './Attendance' 
+import Leave from './Leave'
 
 function App() {
   const [view, setView] = useState('dashboard')
 
   return (
     <div className="flex h-screen bg-gray-100 overflow-hidden">
-      {/* Sidebar Section */}
+      
       <aside className="w-64 bg-indigo-700 text-white flex flex-col">
         <div className="p-6 text-2xl font-bold border-b border-indigo-600">
           Smart HRM
@@ -39,7 +39,7 @@ function App() {
         </div>
       </aside>
 
-      {/* Main Content Area */}
+
       <main className="flex-1 overflow-y-auto p-8">
         <header className="mb-8 flex justify-between items-center bg-white p-4 rounded-xl shadow-sm">
           <h2 className="text-xl font-semibold capitalize">{view} View</h2>
