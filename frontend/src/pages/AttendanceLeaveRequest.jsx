@@ -1,42 +1,8 @@
 import { useState, useEffect } from "react";
 
-// ── Mock Data ─
-const mockAttendanceByDate = {
-  1:  [{ employee: "Alex Rivera",    time: "08:55 AM - 05:30 PM", hours: "8.5h", status: "Present" },
-       { employee: "Jeremy Neigh",   time: "09:10 AM - 06:00 PM", hours: "8.8h", status: "Present" },
-       { employee: "Annette Black",  time: "--",                   hours: "--",   status: "Absent"  }],
-  2:  [{ employee: "Alex Rivera",    time: "09:00 AM - 05:30 PM", hours: "8.5h", status: "Present" },
-       { employee: "Theresa Webb",   time: "09:05 AM - 04:45 PM", hours: "7.6h", status: "Present" }],
-  5:  [{ employee: "Alex Rivera",    time: "09:00 AM - 05:30 PM", hours: "8.5h", status: "Present" },
-       { employee: "Kathryn Murphy", time: "--",                   hours: "--",   status: "On Leave"}],
-  6:  [{ employee: "Alex Rivera",    time: "09:00 AM - 05:30 PM", hours: "8.5h", status: "Present" },
-       { employee: "Jeremy Neigh",   time: "09:00 AM - 05:30 PM", hours: "8.5h", status: "Present" },
-       { employee: "Annette Black",  time: "09:15 AM - 05:30 PM", hours: "8.2h", status: "Present" },
-       { employee: "Courtney Henry", time: "08:50 AM - 05:30 PM", hours: "8.6h", status: "Present" }],
-  7:  [{ employee: "Alex Rivera",    time: "09:00 AM - 05:30 PM", hours: "8.5h", status: "Present" },
-       { employee: "Jane Cooper",    time: "--",                   hours: "--",   status: "Absent"  }],
-  8:  [{ employee: "Alex Rivera",    time: "09:00 AM - 05:30 PM", hours: "8.5h", status: "Present" },
-       { employee: "Theresa Webb",   time: "09:00 AM - 05:00 PM", hours: "8.0h", status: "Present" },
-       { employee: "Jeremy Neigh",   time: "10:00 AM - 06:00 PM", hours: "8.0h", status: "Late"    }],
-  10: [{ employee: "Alex Rivera",    time: "09:00 AM - 05:30 PM", hours: "8.5h", status: "Present" },
-       { employee: "Jeremy Neigh",   time: "09:05 AM - 05:30 PM", hours: "8.4h", status: "Present" },
-       { employee: "Annette Black",  time: "--",                   hours: "--",   status: "Absent"  },
-       { employee: "Kathryn Murphy", time: "10:15 AM - 06:00 PM", hours: "7.7h", status: "Late"    }],
-  14: [{ employee: "Alex Rivera",    time: "09:00 AM - 05:30 PM", hours: "8.5h", status: "Present" },
-       { employee: "Kathryn Murphy", time: "09:00 AM - 05:30 PM", hours: "8.5h", status: "Present" }],
-  20: [{ employee: "Alex Rivera",    time: "09:00 AM - 05:30 PM", hours: "8.5h", status: "Present" },
-       { employee: "Courtney Henry", time: "--",                   hours: "--",   status: "On Leave"}],
-};
+const API = "http://localhost:5000";
 
-const mockLeaveRequests = [
-  { _id: "l1", name: "Jeremy Neigh",   empNum: "E-001", leaveType: "Education", enabled: "Active",   status: "Pending" },
-  { _id: "l2", name: "Annette Black",  empNum: "E-002", leaveType: "Sick",      enabled: "Inactive", status: "Pending" },
-  { _id: "l3", name: "Theresa Webb",   empNum: "E-003", leaveType: "Annual",    enabled: "Inactive", status: "Pending" },
-  { _id: "l4", name: "Kathryn Murphy", empNum: "E-008", leaveType: "Casual",    enabled: "Active",   status: "Pending" },
-  { _id: "l5", name: "Courtney Henry", empNum: "E-012", leaveType: "Unpaid",    enabled: "Active",   status: "Pending" },
-  { _id: "l6", name: "Jane Cooper",    empNum: "E-043", leaveType: "Sick",      enabled: "Inactive", status: "Pending" },
-];
-// ─────
+
 
 const avatarColors = ["bg-blue-500","bg-purple-500","bg-pink-500","bg-orange-500","bg-teal-500","bg-rose-500"];
 const getInitials  = (name) => name.split(" ").map((n) => n[0]).join("").toUpperCase();
@@ -108,33 +74,39 @@ export default function AttendanceLeaveRequest() {
   const [selectedDay,   setSelectedDay]   = useState(10);
   const [attendanceData,setAttendanceData]= useState([]);
   const [loading,       setLoading]       = useState(false);
-  const [leaveRequests, setLeaveRequests] = useState(mockLeaveRequests);
+  const [leaveRequests, setLeaveRequests] = useState([]);
   const [searchQuery,   setSearchQuery]   = useState("");
   const [hoveredRow,    setHoveredRow]    = useState(null);
   const [hoveredRecord, setHoveredRecord] = useState(null);
   const [openMenu,      setOpenMenu]      = useState(null);
 
   useEffect(() => {
-    if (!selectedDay) return;
-    setLoading(true);
-    
-    setTimeout(() => {
-      setAttendanceData(mockAttendanceByDate[selectedDay] || []);
-      setLoading(false);
-    }, 300);
-  }, [selectedDay]);
+  if (!selectedDay) return;
+  setLoading(true);
+  fetch(`${API}/api/attendance/${selectedDay}`)
+    .then(res => res.json())
+    .then(data => { setAttendanceData(data); setLoading(false); })
+    .catch(() => setLoading(false));
+}, [selectedDay]);
+
+useEffect(() => {
+  fetch(`${API}/api/leaves`)
+    .then(res => res.json())
+    .then(data => setLeaveRequests(data))
+    .catch(err => console.error(err));
+}, []);
 
   
 
-  const handleApprove = (id) => {
-    // fetch(`/api/leave-requests/${id}/approve`, { method: "PUT" });
-    setLeaveRequests(prev => prev.map(r => r._id === id ? { ...r, status: "Approved" } : r));
-  };
+const handleApprove = (id) => {
+  fetch(`${API}/api/leaves/${id}/approve`, { method: "PUT" })
+    .then(() => setLeaveRequests(prev => prev.map(r => r._id === id ? { ...r, status: "Approved" } : r)));
+};
 
-  const handleReject = (id) => {
-    // fetch(`/api/leave-requests/${id}/reject`, { method: "PUT" });
-    setLeaveRequests(prev => prev.map(r => r._id === id ? { ...r, status: "Rejected" } : r));
-  };
+const handleReject = (id) => {
+  fetch(`${API}/api/leaves/${id}/reject`, { method: "PUT" })
+    .then(() => setLeaveRequests(prev => prev.map(r => r._id === id ? { ...r, status: "Rejected" } : r)));
+};
 
   const filteredLeave = leaveRequests.filter(r =>
     r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

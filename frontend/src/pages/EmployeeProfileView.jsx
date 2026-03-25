@@ -1,23 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // ── Mock Data ──
-const mockEmployee = {
-  name:        "Tharuka Rajapaksha",
-  fathersName: "Namal Rajapaksha",
-  dob:         "08-OCT-2007",
-  gender:      "Female",
-  email:       "Tharukarajapaksha34@gmail.com",
-  phone:       "+94781355069",
-  address:     "No 2 | Colombo 07",
-  empId:       "DPTG - 23456",
-  department:  "HR DEPARTMENT",
-  designation: "HR MANAGER",
-  role:        "HR - Manager",
-  workedFor:   "3 years, 3 months & 8 days",
-  attendance:  { present: 0, total: 28 },
-  leaves:      { taken: 0, total: 440 },
-  awards:      4,
-};
+
 
 const mockNotices = [];
 
@@ -42,7 +26,14 @@ const DetailRow = ({ label, value, isEmail }) => (
 );
 
 export default function EmployeeProfileView() {
-  const [emp] = useState(mockEmployee);
+ const [emp, setEmp] = useState({});
+
+useEffect(() => {
+  fetch("http://localhost:5000/api/employees/6650a1234b5c6d7e8f901234")
+    .then(res => res.json())
+    .then(data => setEmp(data))
+    .catch(err => console.error(err));
+}, []);
 
   return (
     <div className="bg-gray-50 min-h-screen p-6 font-sans">
@@ -67,7 +58,7 @@ export default function EmployeeProfileView() {
 
           {/* Avatar */}
           <div style={{ width: "110px", height: "110px", borderRadius: "50%", background: "linear-gradient(135deg, #94a3b8 0%, #64748b 100%)", display: "flex", alignItems: "center", justifyContent: "center", margin: "8px 0", fontSize: "32px", fontWeight: 700, color: "rgba(255,255,255,0.9)", flexShrink: 0, boxShadow: "inset 0 2px 8px rgba(0,0,0,0.15)" }}>
-            {emp.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)}
+           {emp.name ? emp.name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) : ""}
           </div>
 
           <div style={{ padding: "10px 16px 6px", textAlign: "center" }}>
@@ -88,8 +79,8 @@ export default function EmployeeProfileView() {
             onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)";   e.currentTarget.style.boxShadow = ""; }}
           >
             {[
-              { label: "ATTENDANCE", value: `${emp.attendance.present}/${emp.attendance.total}` },
-              { label: "Leaves",     value: `${emp.leaves.taken}/${emp.leaves.total}` },
+              { label: "ATTENDANCE", value: emp.attendance ? `${emp.attendance.present}/${emp.attendance.total}` : "0/0" },
+              { label: "Leaves",     value: emp.leaves ? `${emp.leaves.taken}/${emp.leaves.total}` : "0/0" },
               { label: "Awards",     value: emp.awards },
             ].map((stat, i) => (
               <div key={i} style={{ textAlign: "center" }}>

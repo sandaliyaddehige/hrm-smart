@@ -1,22 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-// ── Mock Data ──
-const mockUser = {
-  firstName:        "Gihan",
-  lastName:         "Pramith",
-  email:            "gihan.p@company.com",
-  address:          "123 Business Bay, High Street, Colombo, Sri Lanka",
-  contactNumber:    "+94 77 123 4567",
-  emergencyContact: "+94 77 987 6543",
-  employeeId:       "HRM-2026-042",
-  department:       "Human Resources",
-  joinDate:         "January 12, 2024",
-  role:             "HR Manager",
-  jobTitle:         "HR Manager",
-  employmentType:   "Full Time",
-  workLocation:     "Colombo, Sri Lanka",
-};
-// ──────────
+const API = "http://localhost:5000";
+const USER_ID = "6650a1234b5c6d7e8f901234";
 
 const getInitials = (first, last) => `${first[0]}${last[0]}`.toUpperCase();
 const TABS = ["Personal Information", "Employment Details", "Documents", "Security Settings"];
@@ -66,8 +51,8 @@ const Field = ({ label, value, onChange, fullWidth = false, textarea = false, di
 export default function UserProfile() {
   const [activeTab,    setActiveTab]    = useState(0);
   const [isEditing,    setIsEditing]    = useState(false);
-  const [formData,     setFormData]     = useState(mockUser);
-  const [savedData,    setSavedData]    = useState(mockUser);
+  const [formData,     setFormData]     = useState({});
+  const [savedData,    setSavedData]    = useState({});
   const [showPwForm,   setShowPwForm]   = useState(false);
   const [passwords,    setPasswords]    = useState({ current: "", newPw: "", confirm: "" });
   const [pwError,      setPwError]      = useState("");
@@ -76,11 +61,24 @@ export default function UserProfile() {
   const [twoFA,        setTwoFA]        = useState(false);
   const [loginNotif,   setLoginNotif]   = useState(true);
 
+    // ── Fetch User from Backend ──
+  useEffect(() => {
+    fetch(`${API}/api/users/${USER_ID}`)
+      .then(res => res.json())
+      .then(data => { setFormData(data); setSavedData(data); })
+      .catch(err => console.error(err));
+  }, []);
+
   const handleChange = (field) => (e) =>
     setFormData(prev => ({ ...prev, [field]: e.target.value }));
 
-  const handleSave = () => {
-    // TODO: PUT /api/users/profile { ...formData }
+   // ── Save Profile to Backend ──
+  const handleSave = async () => {
+    await fetch(`${API}/api/users/${USER_ID}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    });
     setSavedData(formData);
     setIsEditing(false);
     setSaveSuccess(true);
