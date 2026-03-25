@@ -1,16 +1,7 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaSearch, FaDownload, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
+import { fetchAttendances } from '../api/api'
 
-const allEmployees = [
-  { name: 'Alice Johnson', id: 'MGR-001', dept: 'Engineering',    present: 21, absent: 1, leave: 1, att: 91.3 },
-  { name: 'Bob Smith',     id: 'MGR-002', dept: 'Sales',          present: 20, absent: 2, leave: 1, att: 87.0 },
-  { name: 'Carla Diaz',    id: 'MGR-003', dept: 'HR',             present: 15, absent: 6, leave: 2, att: 65.2 },
-  { name: 'David Miller',  id: 'MGR-004', dept: 'Engineering',    present: 22, absent: 0, leave: 1, att: 95.7 },
-  { name: 'Emma Wilson',   id: 'MGR-005', dept: 'Sales',          present: 23, absent: 0, leave: 0, att: 100  },
-  { name: 'Frank Garcia',  id: 'MGR-006', dept: 'Engineering',    present: 18, absent: 4, leave: 1, att: 78.3 },
-  { name: 'Rasil Laksika', id: 'MGR-007', dept: 'HR',             present: 22, absent: 0, leave: 1, att: 98.5 },
-  { name: 'John Silva',    id: 'MGR-008', dept: 'IT/Engineering',  present: 18, absent: 4, leave: 1, att: 78.0 },
-]
 const departments = ['All', 'Engineering', 'Sales', 'HR', 'IT/Engineering']
 const PER_PAGE = 5
 
@@ -21,18 +12,56 @@ const getStatus = (att) => {
 }
 
 export default function EmployeeAttendance() {
-  const [search, setSearch] = useState('')
-  const [dept, setDept]     = useState('All')
-  const [page, setPage]     = useState(1)
+  const [records, setRecords]   = useState([])
+  const [stats, setStats]       = useState({ total: 0, avgAtt: 0, onLeave: 0 })
+  const [loading, setLoading]   = useState(true)
+  const [error, setError]       = useState(null)
+  const [search, setSearch]     = useState('')
+  const [dept, setDept]         = useState('All')
+  const [page, setPage]         = useState(1)
+  const currentMonth = new Date().toISOString().slice(0, 7)
 
-  const filtered = allEmployees.filter(e =>
-    e.name.toLowerCase().includes(search.toLowerCase()) &&
-    (dept === 'All' || e.dept === dept)
+  const load = async (params = {}) => {
+    try {
+      setLoading(true)
+      const res = await fetchAttendances({ month: currentMonth, ...params })
+      setRecords(res.data.records)
+      setStats(res.data.stats)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value)
+    setPage(1)
+    load({ search: e.target.value, dept: dept !== 'All' ? dept : '' })
+  }
+
+  const handleDept = (e) => {
+    setDept(e.target.value)
+    setPage(1)
+    load({ search, dept: e.target.value !== 'All' ? e.target.value : '' })
+  }
+
+  const totalPages = Math.ceil(records.length / PER_PAGE)
+  const paginated  = records.slice((page - 1) * PER_PAGE, page * PER_PAGE)
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+    </div>
   )
-  const totalPages = Math.ceil(filtered.length / PER_PAGE)
-  const paginated  = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE)
-  const avgAtt     = (allEmployees.reduce((s, e) => s + e.att, 0) / allEmployees.length).toFixed(1)
-  const onLeave    = allEmployees.reduce((s, e) => s + e.leave, 0)
+
+  if (error) return (
+    <div className="bg-rose-50 border border-rose-200 text-rose-600 p-5 rounded-2xl text-sm font-medium">
+      Failed to load attendance data: {error}
+    </div>
+  )
 
   return (
     <div className="space-y-6">
@@ -41,7 +70,9 @@ export default function EmployeeAttendance() {
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Team Attendance Report</h2>
-          <p className="text-sm text-slate-500 font-medium">Mar 01, 2026 – Mar 31, 2026</p>
+          <p className="text-sm text-slate-500 font-medium">
+            {new Date(currentMonth + '-01').toLocaleString('default', { month: 'long', year: 'numeric' })}
+          </p>
         </div>
         <div className="flex gap-3">
           <button className="flex items-center gap-2 border border-slate-200 bg-white text-slate-600 px-5 py-2.5 rounded-2xl font-bold text-sm hover:bg-slate-50 transition-all shadow-sm cursor-pointer">
@@ -57,15 +88,15 @@ export default function EmployeeAttendance() {
       <div className="grid grid-cols-4 gap-5">
         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Total Team Members</p>
-          <h2 className="text-2xl font-extrabold text-slate-900">{allEmployees.length}</h2>
+          <h2 className="text-2xl font-extrabold text-slate-900">{stats.total}</h2>
         </div>
         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Avg. Attendance</p>
-          <h2 className="text-2xl font-extrabold text-indigo-600">{avgAtt}%</h2>
+          <h2 className="text-2xl font-extrabold text-indigo-600">{stats.avgAtt}%</h2>
         </div>
         <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">On Leave Today</p>
-          <h2 className="text-2xl font-extrabold text-amber-500">{String(onLeave).padStart(2, '0')}</h2>
+          <h2 className="text-2xl font-extrabold text-amber-500">{String(stats.onLeave).padStart(2, '0')}</h2>
         </div>
         <div className="bg-slate-800 rounded-3xl p-6 shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2.5">Monthly Trend</p>
@@ -82,11 +113,10 @@ export default function EmployeeAttendance() {
       <div className="flex gap-4 flex-wrap">
         <div className="relative flex-1 min-w-[200px] group">
           <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors text-sm" />
-          <input type="text" placeholder="Search employee name..."
-            onChange={e => { setSearch(e.target.value); setPage(1) }}
+          <input type="text" placeholder="Search employee name..." value={search} onChange={handleSearch}
             className="w-full bg-white border border-slate-200 rounded-2xl py-3.5 pl-14 pr-5 text-sm font-medium text-slate-700 placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-300 shadow-sm transition-all" />
         </div>
-        <select value={dept} onChange={e => { setDept(e.target.value); setPage(1) }}
+        <select value={dept} onChange={handleDept}
           className="bg-white border border-slate-200 rounded-2xl py-3.5 px-5 text-sm font-bold text-slate-600 outline-none focus:ring-4 focus:ring-indigo-50 shadow-sm cursor-pointer min-w-[180px]">
           {departments.map(d => <option key={d} value={d}>Dept: {d}</option>)}
         </select>
@@ -97,24 +127,26 @@ export default function EmployeeAttendance() {
         <table className="w-full border-separate border-spacing-y-2">
           <thead>
             <tr className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
-              {['Employee','ID','Department','Present','Absent','Leave','Att. %','Status'].map(h => (
+              {['Employee','Department','Present','Absent','Leave','Att. %','Status'].map(h => (
                 <th key={h} className="px-4 pb-2 text-left">{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {paginated.map((e, i) => {
-              const s = getStatus(e.att)
+            {paginated.map((r, i) => {
+              const emp     = r.employee || {}
+              const total   = r.present + r.absent + r.leave || 1
+              const attPct  = ((r.present / total) * 100).toFixed(1)
+              const s       = getStatus(Number(attPct))
               return (
                 <tr key={i} className="group">
-                  <td className="px-4 py-3.5 bg-slate-50 rounded-l-2xl border-y border-l border-slate-100 font-bold text-indigo-600 text-sm group-hover:bg-white group-hover:shadow-md transition-all">{e.name}</td>
-                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-400 font-bold text-sm group-hover:bg-white transition-all">{e.id}</td>
-                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-600 text-sm group-hover:bg-white transition-all">{e.dept}</td>
-                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-700 font-bold text-sm group-hover:bg-white transition-all">{e.present}</td>
-                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-700 font-bold text-sm group-hover:bg-white transition-all">{e.absent}</td>
-                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-700 font-bold text-sm group-hover:bg-white transition-all">{e.leave}</td>
+                  <td className="px-4 py-3.5 bg-slate-50 rounded-l-2xl border-y border-l border-slate-100 font-bold text-indigo-600 text-sm group-hover:bg-white group-hover:shadow-md transition-all">{emp.name}</td>
+                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-600 text-sm group-hover:bg-white transition-all">{emp.dept}</td>
+                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-700 font-bold text-sm group-hover:bg-white transition-all">{r.present}</td>
+                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-700 font-bold text-sm group-hover:bg-white transition-all">{r.absent}</td>
+                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-700 font-bold text-sm group-hover:bg-white transition-all">{r.leave}</td>
                   <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 group-hover:bg-white transition-all">
-                    <span className={`text-sm font-extrabold ${e.att >= 90 ? 'text-emerald-600' : e.att >= 75 ? 'text-amber-500' : 'text-rose-500'}`}>{e.att.toFixed(1)}%</span>
+                    <span className={`text-sm font-extrabold ${Number(attPct) >= 90 ? 'text-emerald-600' : Number(attPct) >= 75 ? 'text-amber-500' : 'text-rose-500'}`}>{attPct}%</span>
                   </td>
                   <td className="px-4 py-3.5 bg-slate-50 rounded-r-2xl border-y border-r border-slate-100 group-hover:bg-white transition-all">
                     <span className={`px-2.5 py-1.5 rounded-lg text-[10px] font-extrabold ${s.cls}`}>{s.label}</span>
@@ -124,6 +156,9 @@ export default function EmployeeAttendance() {
             })}
           </tbody>
         </table>
+        {records.length === 0 && (
+          <p className="text-center text-slate-400 text-sm py-8">No attendance records found for this period.</p>
+        )}
       </div>
 
       {/* Pagination */}

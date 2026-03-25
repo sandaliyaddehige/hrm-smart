@@ -1,14 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaSearch, FaTimes } from 'react-icons/fa'
-
-const employees = [
-  { id: 'MGR-001', name: 'Alice Johnson', role: 'Product Manager',  dept: 'Engineering', kpi: 92, tasks: 88, attendance: 98, collaboration: 4, rating: 'Exceeds Expectations' },
-  { id: 'MGR-002', name: 'Bob Smith',     role: 'Team Lead',        dept: 'Sales',       kpi: 78, tasks: 82, attendance: 91, collaboration: 3, rating: 'Meets Expectations'   },
-  { id: 'MGR-003', name: 'Carla Diaz',    role: 'HR Specialist',    dept: 'HR',          kpi: 85, tasks: 90, attendance: 95, collaboration: 5, rating: 'Outstanding'          },
-  { id: 'MGR-004', name: 'David Miller',  role: 'Senior Developer', dept: 'Engineering', kpi: 60, tasks: 65, attendance: 72, collaboration: 2, rating: 'Below Expectations'   },
-  { id: 'MGR-005', name: 'Emma Wilson',   role: 'Sales Executive',  dept: 'Sales',       kpi: 95, tasks: 93, attendance: 99, collaboration: 5, rating: 'Outstanding'          },
-  { id: 'MGR-006', name: 'Frank Garcia',  role: 'QA Engineer',      dept: 'Engineering', kpi: 80, tasks: 77, attendance: 88, collaboration: 3, rating: 'Meets Expectations'   },
-]
+import { fetchPerformances, updatePerformance } from '../api/api'
 
 const ratingOptions = ['Outstanding', 'Exceeds Expectations', 'Meets Expectations', 'Below Expectations']
 
@@ -32,27 +24,72 @@ const MetricBar = ({ label, value, color }) => (
 )
 
 export default function EmployeePerformance() {
-  const [search, setSearch]     = useState('')
-  const [selected, setSelected] = useState(null)
-  const [comment, setComment]   = useState('')
-  const [rating, setRating]     = useState('Exceeds Expectations')
+  const [performances, setPerformances] = useState([])
+  const [loading, setLoading]           = useState(true)
+  const [error, setError]               = useState(null)
+  const [search, setSearch]             = useState('')
+  const [selected, setSelected]         = useState(null)
+  const [comment, setComment]           = useState('')
+  const [rating, setRating]             = useState('Meets Expectations')
+  const [saving, setSaving]             = useState(false)
 
-  const filtered = employees.filter(e =>
-    e.name.toLowerCase().includes(search.toLowerCase()) ||
-    e.dept.toLowerCase().includes(search.toLowerCase())
+  const load = async (q = '') => {
+    try {
+      setLoading(true)
+      const res = await fetchPerformances(q)
+      setPerformances(res.data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const handleSearch = (e) => { setSearch(e.target.value); load(e.target.value) }
+
+  const openReview = (perf) => {
+    setSelected(perf)
+    setRating(perf.rating)
+    setComment(perf.comment || '')
+  }
+
+  const handleSubmit = async () => {
+    setSaving(true)
+    try {
+      const res = await updatePerformance(selected._id, { rating, comment })
+      setPerformances(performances.map(p => p._id === selected._id ? res.data : p))
+      setSelected(null)
+    } catch (err) {
+      alert(err.response?.data?.message || err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+    </div>
+  )
+
+  if (error) return (
+    <div className="bg-rose-50 border border-rose-200 text-rose-600 p-5 rounded-2xl text-sm font-medium">
+      Failed to load performance data: {error}
+    </div>
   )
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-extrabold text-slate-800 tracking-tight">Performance Reviews</h2>
-        <p className="text-sm text-slate-500 font-medium">Q1 Review 2026 — {employees.length} employees</p>
+        <p className="text-sm text-slate-500 font-medium">Q1 Review 2026 — {performances.length} employees</p>
       </div>
 
       <div className="relative group">
         <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors text-sm" />
-        <input type="text" placeholder="Search by name or department..."
-          onChange={e => setSearch(e.target.value)}
+        <input type="text" placeholder="Search by name or department..." value={search} onChange={handleSearch}
           className="w-full bg-white border border-slate-200 rounded-2xl py-3.5 pl-14 pr-5 text-sm font-medium text-slate-700 placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-300 shadow-sm transition-all" />
       </div>
 
@@ -66,40 +103,48 @@ export default function EmployeePerformance() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((emp, i) => (
-              <tr key={i} className="group">
-                <td className="px-4 py-3.5 bg-slate-50 rounded-l-2xl border-y border-l border-slate-100 group-hover:bg-white group-hover:shadow-md transition-all">
-                  <div className="flex items-center gap-3">
-                    <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=4f46e5&color=fff`} alt={emp.name} className="w-9 h-9 rounded-xl shrink-0" />
-                    <div>
-                      <p className="font-bold text-indigo-600 text-sm leading-tight">{emp.name}</p>
-                      <p className="text-[10px] text-slate-400 font-semibold">{emp.role}</p>
+            {performances.map((perf, i) => {
+              const emp = perf.employee || {}
+              return (
+                <tr key={i} className="group">
+                  <td className="px-4 py-3.5 bg-slate-50 rounded-l-2xl border-y border-l border-slate-100 group-hover:bg-white group-hover:shadow-md transition-all">
+                    <div className="flex items-center gap-3">
+                      <img src={emp.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name || '?')}&background=4f46e5&color=fff`}
+                        alt={emp.name} className="w-9 h-9 rounded-xl shrink-0" />
+                      <div>
+                        <p className="font-bold text-indigo-600 text-sm leading-tight">{emp.name}</p>
+                        <p className="text-[10px] text-slate-400 font-semibold">{emp.role}</p>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-600 text-sm group-hover:bg-white transition-all">{emp.dept}</td>
-                <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 group-hover:bg-white transition-all">
-                  <span className={`text-sm font-extrabold ${emp.kpi >= 80 ? 'text-emerald-600' : emp.kpi >= 65 ? 'text-amber-500' : 'text-rose-500'}`}>{emp.kpi}%</span>
-                </td>
-                <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-700 font-bold text-sm group-hover:bg-white transition-all">{emp.tasks}%</td>
-                <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 group-hover:bg-white transition-all">
-                  <span className={`text-sm font-extrabold ${emp.attendance >= 90 ? 'text-emerald-600' : 'text-amber-500'}`}>{emp.attendance}%</span>
-                </td>
-                <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 group-hover:bg-white transition-all">
-                  <span className={`px-2.5 py-1.5 rounded-lg text-[10px] font-extrabold ${ratingCls[emp.rating]}`}>{emp.rating.toUpperCase()}</span>
-                </td>
-                <td className="px-4 py-3.5 bg-slate-50 rounded-r-2xl border-y border-r border-slate-100 group-hover:bg-white transition-all">
-                  <button onClick={() => { setSelected(emp); setRating(emp.rating); setComment('') }}
-                    className="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white rounded-xl text-[11px] font-extrabold transition-all cursor-pointer border-none">
-                    Review
-                  </button>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-600 text-sm group-hover:bg-white transition-all">{emp.dept}</td>
+                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 group-hover:bg-white transition-all">
+                    <span className={`text-sm font-extrabold ${perf.kpi >= 80 ? 'text-emerald-600' : perf.kpi >= 65 ? 'text-amber-500' : 'text-rose-500'}`}>{perf.kpi}%</span>
+                  </td>
+                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-700 font-bold text-sm group-hover:bg-white transition-all">{perf.tasks}%</td>
+                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 group-hover:bg-white transition-all">
+                    <span className={`text-sm font-extrabold ${perf.attendance >= 90 ? 'text-emerald-600' : 'text-amber-500'}`}>{perf.attendance}%</span>
+                  </td>
+                  <td className="px-4 py-3.5 bg-slate-50 border-y border-slate-100 group-hover:bg-white transition-all">
+                    <span className={`px-2.5 py-1.5 rounded-lg text-[10px] font-extrabold ${ratingCls[perf.rating]}`}>{perf.rating?.toUpperCase()}</span>
+                  </td>
+                  <td className="px-4 py-3.5 bg-slate-50 rounded-r-2xl border-y border-r border-slate-100 group-hover:bg-white transition-all">
+                    <button onClick={() => openReview(perf)}
+                      className="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-600 text-indigo-600 hover:text-white rounded-xl text-[11px] font-extrabold transition-all cursor-pointer border-none">
+                      Review
+                    </button>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
+        {performances.length === 0 && (
+          <p className="text-center text-slate-400 text-sm py-8">No performance records found.</p>
+        )}
       </div>
 
+      {/* Review Modal */}
       {selected && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30 backdrop-blur-sm">
           <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl">
@@ -111,14 +156,17 @@ export default function EmployeePerformance() {
                 </button>
               </div>
               <div className="flex items-center gap-5 p-5 bg-slate-50 rounded-2xl mb-6">
-                <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(selected.name)}&background=4f46e5&color=fff&size=80`} alt={selected.name} className="w-16 h-16 rounded-2xl shrink-0" />
+                <img src={selected.employee?.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(selected.employee?.name || '?')}&background=4f46e5&color=fff&size=80`}
+                  alt={selected.employee?.name} className="w-16 h-16 rounded-2xl shrink-0" />
                 <div>
-                  <h4 className="text-lg font-extrabold text-slate-800 mb-0.5">{selected.name}</h4>
-                  <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-wide">{selected.role}</p>
-                  <p className="text-xs text-slate-400 font-semibold">{selected.dept}</p>
+                  <h4 className="text-lg font-extrabold text-slate-800 mb-0.5">{selected.employee?.name}</h4>
+                  <p className="text-[11px] font-bold text-indigo-600 uppercase tracking-wide">{selected.employee?.role}</p>
+                  <p className="text-xs text-slate-400 font-semibold">{selected.employee?.dept}</p>
                 </div>
                 <div className="ml-auto text-center">
-                  <p className="text-3xl font-black text-indigo-600">{((selected.kpi + selected.tasks + selected.attendance) / 3).toFixed(1)}%</p>
+                  <p className="text-3xl font-black text-indigo-600">
+                    {((selected.kpi + selected.tasks + selected.attendance) / 3).toFixed(1)}%
+                  </p>
                   <p className="text-[10px] font-bold text-slate-400 uppercase">Avg Score</p>
                 </div>
               </div>
@@ -150,8 +198,11 @@ export default function EmployeePerformance() {
                 </div>
               </div>
               <div className="flex gap-3">
-                <button onClick={() => setSelected(null)} className="flex-1 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 border border-slate-200 bg-white cursor-pointer transition-colors">Save Draft</button>
-                <button onClick={() => setSelected(null)} className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all cursor-pointer border-none">Submit Review</button>
+                <button onClick={() => setSelected(null)} className="flex-1 py-4 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 border border-slate-200 bg-white cursor-pointer transition-colors">Cancel</button>
+                <button onClick={handleSubmit} disabled={saving}
+                  className="flex-1 py-4 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all cursor-pointer border-none disabled:opacity-60">
+                  {saving ? 'Submitting...' : 'Submit Review'}
+                </button>
               </div>
             </div>
           </div>

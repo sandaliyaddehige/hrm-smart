@@ -1,31 +1,49 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Label } from 'recharts'
 import { FaUsers, FaUserCheck, FaUserClock, FaClipboardList } from 'react-icons/fa'
+import { fetchDashboardStats } from '../api/api'
 
-const barData = [
-  { month: 'Jan', value: 110 }, { month: 'Feb', value: 125 }, { month: 'Mar', value: 138 },
-  { month: 'Apr', value: 118 }, { month: 'May', value: 150 }, { month: 'Jun', value: 40  },
-]
-const pieData = [
-  { name: 'Engineering', value: 40 }, { name: 'Sales', value: 30 },
-  { name: 'HR', value: 15 },          { name: 'Other', value: 15 },
-]
 const PIE_COLORS = ['#4f46e5', '#6366f1', '#a5b4fc', '#e0e7ff']
 
-const activities = [
-  { initials: 'AJ', name: 'Alice Johnson', action: 'Performance Review Submitted', date: 'Jun 15, 2026', status: 'APPROVED',     sc: 'text-emerald-600', sb: 'bg-emerald-50' },
-  { initials: 'BS', name: 'Bob Smith',     action: 'Onboarding Completed',         date: 'Jun 14, 2026', status: 'PENDING',      sc: 'text-indigo-600',  sb: 'bg-indigo-50'  },
-  { initials: 'CD', name: 'Carla Diaz',    action: 'Leave Request (Sick)',         date: 'Jun 14, 2026', status: 'UNDER REVIEW', sc: 'text-amber-600',   sb: 'bg-amber-50'   },
-]
-
-const statCards = [
-  { title: 'Total Employees', value: '150', trend: '↑ 2% vs Last Month', icon: FaUsers,         bg: 'bg-indigo-600',  shadow: 'shadow-indigo-200' },
-  { title: 'Present Today',   value: '120', trend: '80% Attendance Rate', icon: FaUserCheck,     bg: 'bg-emerald-500', shadow: 'shadow-emerald-200' },
-  { title: 'On Leave',        value: '15',  trend: '10% Total Workforce', icon: FaUserClock,     bg: 'bg-amber-500',   shadow: 'shadow-amber-200' },
-  { title: 'Pending Reviews', value: '8',   trend: 'Requires Action',     icon: FaClipboardList, bg: 'bg-rose-500',    shadow: 'shadow-rose-200' },
-]
+const statusStyle = {
+  'Approved':     { sc: 'text-emerald-600', sb: 'bg-emerald-50' },
+  'Pending':      { sc: 'text-indigo-600',  sb: 'bg-indigo-50'  },
+  'Under Review': { sc: 'text-amber-600',   sb: 'bg-amber-50'   },
+}
 
 export default function EmployeeDashboard() {
+  const [data, setData]       = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState(null)
+
+  useEffect(() => {
+    fetchDashboardStats()
+      .then(res => setData(res.data))
+      .catch(err => setError(err.message))
+      .finally(() => setLoading(false))
+  }, [])
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+    </div>
+  )
+
+  if (error) return (
+    <div className="bg-rose-50 border border-rose-200 text-rose-600 p-5 rounded-2xl text-sm font-medium">
+      Failed to load dashboard: {error}
+    </div>
+  )
+
+  const { stats, attendanceChart, deptData, recentActivities } = data
+
+  const statCards = [
+    { title: 'Total Employees', value: stats.totalEmployees, trend: '↑ 2% vs Last Month', icon: FaUsers,         bg: 'bg-indigo-600',  shadow: 'shadow-indigo-200' },
+    { title: 'Present Today',   value: stats.presentToday,   trend: '80% Attendance Rate', icon: FaUserCheck,     bg: 'bg-emerald-500', shadow: 'shadow-emerald-200' },
+    { title: 'On Leave',        value: stats.onLeave,        trend: '10% Total Workforce', icon: FaUserClock,     bg: 'bg-amber-500',   shadow: 'shadow-amber-200' },
+    { title: 'Pending Reviews', value: stats.pendingReviews, trend: 'Requires Action',     icon: FaClipboardList, bg: 'bg-rose-500',    shadow: 'shadow-rose-200' },
+  ]
+
   return (
     <div className="space-y-6">
 
@@ -54,7 +72,7 @@ export default function EmployeeDashboard() {
           <h3 className="text-base font-bold text-slate-800 mb-5">Monthly Attendance Overview</h3>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={barData} barCategoryGap="40%">
+              <BarChart data={attendanceChart} barCategoryGap="40%">
                 <defs>
                   <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%"   stopColor="#4f46e5" />
@@ -63,7 +81,7 @@ export default function EmployeeDashboard() {
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                 <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} domain={[0, 160]} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
                 <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' }} />
                 <Bar dataKey="value" fill="url(#barGrad)" radius={[8, 8, 0, 0]} />
               </BarChart>
@@ -76,19 +94,19 @@ export default function EmployeeDashboard() {
           <div className="h-48">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={pieData} innerRadius={55} outerRadius={75} paddingAngle={6} dataKey="value">
-                  {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} strokeWidth={0} />)}
-                  <Label value="150" position="center" fill="#1e293b" style={{ fontSize: '20px', fontWeight: '800' }} />
+                <Pie data={deptData} innerRadius={55} outerRadius={75} paddingAngle={6} dataKey="value">
+                  {deptData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i % PIE_COLORS.length]} strokeWidth={0} />)}
+                  <Label value={stats.totalEmployees} position="center" fill="#1e293b" style={{ fontSize: '20px', fontWeight: '800' }} />
                 </Pie>
                 <Tooltip />
               </PieChart>
             </ResponsiveContainer>
           </div>
           <div className="space-y-2 mt-3">
-            {pieData.map((d, i) => (
+            {deptData.map((d, i) => (
               <div key={i} className="flex items-center justify-between text-xs font-semibold text-slate-500">
                 <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i] }} />
+                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: PIE_COLORS[i % PIE_COLORS.length] }} />
                   {d.name}
                 </div>
                 <span className="font-bold text-slate-700">{d.value}%</span>
@@ -111,21 +129,25 @@ export default function EmployeeDashboard() {
             </tr>
           </thead>
           <tbody>
-            {activities.map((a, i) => (
-              <tr key={i} className="group">
-                <td className="px-5 py-3.5 bg-slate-50 rounded-l-2xl border-y border-l border-slate-100 group-hover:bg-white group-hover:shadow-md transition-all">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-[11px] font-extrabold text-indigo-600 shrink-0">{a.initials}</div>
-                    <span className="font-bold text-indigo-600 text-sm">{a.name}</span>
-                  </div>
-                </td>
-                <td className="px-5 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-600 text-sm group-hover:bg-white transition-all">{a.action}</td>
-                <td className="px-5 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-500 text-sm group-hover:bg-white transition-all">{a.date}</td>
-                <td className="px-5 py-3.5 bg-slate-50 rounded-r-2xl border-y border-r border-slate-100 group-hover:bg-white transition-all">
-                  <span className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold ${a.sb} ${a.sc}`}>{a.status}</span>
-                </td>
-              </tr>
-            ))}
+            {recentActivities.map((a, i) => {
+              const s = statusStyle[a.status] || statusStyle['Pending']
+              const initials = a.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+              return (
+                <tr key={i} className="group">
+                  <td className="px-5 py-3.5 bg-slate-50 rounded-l-2xl border-y border-l border-slate-100 group-hover:bg-white group-hover:shadow-md transition-all">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-indigo-50 flex items-center justify-center text-[11px] font-extrabold text-indigo-600 shrink-0">{initials}</div>
+                      <span className="font-bold text-indigo-600 text-sm">{a.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-600 text-sm group-hover:bg-white transition-all">{a.action}</td>
+                  <td className="px-5 py-3.5 bg-slate-50 border-y border-slate-100 text-slate-500 text-sm group-hover:bg-white transition-all">{a.date}</td>
+                  <td className="px-5 py-3.5 bg-slate-50 rounded-r-2xl border-y border-r border-slate-100 group-hover:bg-white transition-all">
+                    <span className={`px-3 py-1.5 rounded-lg text-[10px] font-extrabold ${s.sb} ${s.sc}`}>{a.status.toUpperCase()}</span>
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

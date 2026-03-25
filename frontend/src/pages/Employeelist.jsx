@@ -1,41 +1,94 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { FaPlus, FaSearch, FaEdit, FaTrash, FaTimes, FaChevronLeft, FaChevronRight } from 'react-icons/fa'
-
-const initial = [
-  { id: 'MGR-001', name: 'Alice Johnson', role: 'Product Manager',  email: 'alice@hrms.com', phone: '0712345678', dept: 'Engineering', joinDate: '2024-01-10', status: 'Active'   },
-  { id: 'MGR-002', name: 'Bob Smith',     role: 'Team Lead',        email: 'bob@hrms.com',   phone: '0771234567', dept: 'Sales',       joinDate: '2024-02-15', status: 'Active'   },
-  { id: 'MGR-003', name: 'Carla Diaz',    role: 'HR Specialist',    email: 'carla@hrms.com', phone: '0756543210', dept: 'HR',          joinDate: '2023-11-20', status: 'On-Leave' },
-  { id: 'MGR-004', name: 'David Miller',  role: 'Senior Developer', email: 'david@hrms.com', phone: '0712349876', dept: 'Engineering', joinDate: '2024-03-05', status: 'Active'   },
-  { id: 'MGR-005', name: 'Emma Wilson',   role: 'Sales Executive',  email: 'emma@hrms.com',  phone: '0778887766', dept: 'Sales',       joinDate: '2024-04-01', status: 'Active'   },
-  { id: 'MGR-006', name: 'Frank Garcia',  role: 'QA Engineer',      email: 'frank@hrms.com', phone: '0700112233', dept: 'Engineering', joinDate: '2023-09-15', status: 'Active'   },
-]
+import { fetchEmployees, createEmployee, updateEmployee, deleteEmployee } from '../api/api'
 
 const empty = { name: '', role: '', email: '', phone: '', dept: '', joinDate: '', status: 'Active' }
 const PER_PAGE = 6
 
 export default function EmployeeList() {
-  const [employees, setEmployees] = useState(initial)
+  const [employees, setEmployees] = useState([])
+  const [loading, setLoading]     = useState(true)
+  const [error, setError]         = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editId, setEditId]       = useState(null)
   const [search, setSearch]       = useState('')
   const [page, setPage]           = useState(1)
   const [form, setForm]           = useState(empty)
+  const [saving, setSaving]       = useState(false)
 
-  const filtered   = employees.filter(e => e.name.toLowerCase().includes(search.toLowerCase()) || e.role.toLowerCase().includes(search.toLowerCase()))
-  const totalPages = Math.ceil(filtered.length / PER_PAGE)
-  const paginated  = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE)
+  const loadEmployees = async (q = '') => {
+    try {
+      setLoading(true)
+      const res = await fetchEmployees(q)
+      setEmployees(res.data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { loadEmployees() }, [])
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value)
+    setPage(1)
+    loadEmployees(e.target.value)
+  }
+
+  const totalPages = Math.ceil(employees.length / PER_PAGE)
+  const paginated  = employees.slice((page - 1) * PER_PAGE, page * PER_PAGE)
 
   const openAdd    = () => { setForm(empty); setIsEditing(false); setShowModal(true) }
-  const openEdit   = (emp) => { setForm(emp); setEditId(emp.id); setIsEditing(true); setShowModal(true) }
-  const closeModal = () => { setShowModal(false); setForm(empty) }
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    if (isEditing) setEmployees(employees.map(emp => emp.id === editId ? { ...form, id: editId } : emp))
-    else setEmployees([...employees, { ...form, id: `MGR-00${employees.length + 1}` }])
-    closeModal()
+  const openEdit   = (emp) => {
+    setForm({ ...emp, joinDate: emp.joinDate ? emp.joinDate.slice(0, 10) : '' })
+    setEditId(emp._id)
+    setIsEditing(true)
+    setShowModal(true)
   }
-  const deleteEmp = (id) => { if (window.confirm('Delete?')) setEmployees(employees.filter(e => e.id !== id)) }
+  const closeModal = () => { setShowModal(false); setForm(empty) }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setSaving(true)
+    try {
+      if (isEditing) {
+        const res = await updateEmployee(editId, form)
+        setEmployees(employees.map(emp => emp._id === editId ? res.data : emp))
+      } else {
+        const res = await createEmployee(form)
+        setEmployees([res.data, ...employees])
+      }
+      closeModal()
+    } catch (err) {
+      alert(err.response?.data?.message || err.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Delete this employee?')) return
+    try {
+      await deleteEmployee(id)
+      setEmployees(employees.filter(e => e._id !== id))
+    } catch (err) {
+      alert(err.response?.data?.message || err.message)
+    }
+  }
+
+  if (loading) return (
+    <div className="flex items-center justify-center h-64">
+      <div className="w-8 h-8 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin" />
+    </div>
+  )
+
+  if (error) return (
+    <div className="bg-rose-50 border border-rose-200 text-rose-600 p-5 rounded-2xl text-sm font-medium">
+      Failed to load employees: {error}
+    </div>
+  )
 
   return (
     <div className="space-y-6">
@@ -51,19 +104,18 @@ export default function EmployeeList() {
 
       <div className="relative group">
         <FaSearch className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors text-sm" />
-        <input type="text" placeholder="Search by name or role..."
-          onChange={e => { setSearch(e.target.value); setPage(1) }}
+        <input type="text" placeholder="Search by name or role..." value={search} onChange={handleSearch}
           className="w-full bg-white border border-slate-200 rounded-2xl py-3.5 pl-14 pr-5 text-sm font-medium text-slate-700 placeholder:text-slate-400 outline-none focus:ring-4 focus:ring-indigo-50 focus:border-indigo-300 shadow-sm transition-all" />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
         {paginated.map(emp => (
-          <div key={emp.id} className="group bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative">
+          <div key={emp._id} className="group bg-white rounded-3xl p-6 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 relative">
             <div className={`absolute top-5 right-5 px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase ${emp.status === 'Active' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
               {emp.status}
             </div>
             <div className="flex items-center gap-4 mb-5">
-              <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=4f46e5&color=fff`}
+              <img src={emp.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(emp.name)}&background=4f46e5&color=fff`}
                 alt={emp.name} className="w-14 h-14 rounded-2xl object-cover ring-4 ring-slate-50 shrink-0" />
               <div className="min-w-0">
                 <h3 className="font-bold text-slate-800 text-base truncate">{emp.name}</h3>
@@ -72,7 +124,7 @@ export default function EmployeeList() {
               </div>
             </div>
             <div className="grid grid-cols-3 text-center py-3 border-t border-slate-50">
-              {[['ID', emp.id], ['Dept', emp.dept], ['Joined', emp.joinDate.split('-')[0]]].map(([l, v], i) => (
+              {[['Dept', emp.dept], ['Status', emp.status], ['Joined', emp.joinDate?.slice(0, 4)]].map(([l, v], i) => (
                 <div key={l} className={i > 0 ? 'border-l border-slate-100' : ''}>
                   <p className="text-[9px] font-bold text-slate-400 uppercase mb-1">{l}</p>
                   <p className="text-[11px] font-bold text-slate-700 truncate px-1">{v}</p>
@@ -83,7 +135,7 @@ export default function EmployeeList() {
               <button onClick={() => openEdit(emp)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-slate-50 hover:bg-indigo-50 text-indigo-600 rounded-xl font-bold text-xs transition-colors cursor-pointer border-none">
                 <FaEdit size={10} /> Edit
               </button>
-              <button onClick={() => deleteEmp(emp.id)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-slate-50 hover:bg-rose-50 text-rose-500 rounded-xl font-bold text-xs transition-colors cursor-pointer border-none">
+              <button onClick={() => handleDelete(emp._id)} className="flex-1 flex items-center justify-center gap-1.5 py-2.5 bg-slate-50 hover:bg-rose-50 text-rose-500 rounded-xl font-bold text-xs transition-colors cursor-pointer border-none">
                 <FaTrash size={10} /> Delete
               </button>
             </div>
@@ -122,15 +174,16 @@ export default function EmployeeList() {
                   {[['name','Full Name','text'],['role','Job Role','text'],['email','Email','email'],['phone','Phone','text'],['dept','Department','text'],['joinDate','Join Date','date']].map(([f, l, t]) => (
                     <div key={f}>
                       <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1.5">{l}</label>
-                      <input name={f} type={t} value={form[f]} required onChange={e => setForm({ ...form, [e.target.name]: e.target.value })}
+                      <input name={f} type={t} value={form[f] || ''} required={['name','role','email'].includes(f)}
+                        onChange={e => setForm({ ...form, [e.target.name]: e.target.value })}
                         className="w-full bg-slate-50 rounded-xl py-3 px-4 text-sm font-medium text-slate-700 outline-none focus:ring-2 focus:ring-indigo-200 border-none" />
                     </div>
                   ))}
                 </div>
                 <div className="flex gap-3">
                   <button type="button" onClick={closeModal} className="flex-1 py-3.5 rounded-2xl font-bold text-slate-500 hover:bg-slate-50 border border-slate-200 bg-white cursor-pointer transition-colors">Cancel</button>
-                  <button type="submit" className="flex-1 py-3.5 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all cursor-pointer border-none">
-                    {isEditing ? 'Update' : 'Save Employee'}
+                  <button type="submit" disabled={saving} className="flex-1 py-3.5 bg-indigo-600 text-white rounded-2xl font-bold shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all cursor-pointer border-none disabled:opacity-60">
+                    {saving ? 'Saving...' : isEditing ? 'Update' : 'Save Employee'}
                   </button>
                 </div>
               </form>
